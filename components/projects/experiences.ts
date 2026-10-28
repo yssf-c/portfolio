@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import type { SerializableProject } from "@/components/project-detail";
 import { RamelliExperience } from "@/components/projects/atlasllm-experience";
 import { GluiExperience } from "@/components/projects/glui-experience";
+import { QuernoExperience } from "@/components/projects/querno-experience";
 import { NLPPhishingExperience } from "@/components/projects/nlp-phishing-experience";
 import { MugshotExperience } from "@/components/projects/mugshot-experience";
 import { GalleryGlowExperience } from "@/components/projects/gallery-glow-experience";
@@ -20,6 +21,7 @@ export const projectExperiences: Record<
 > = {
   ramelli: RamelliExperience,
   glui: GluiExperience,
+  querno: QuernoExperience,
   "nlp-phishing-detection": NLPPhishingExperience,
   mugshot: MugshotExperience,
   "gallery-glow": GalleryGlowExperience,

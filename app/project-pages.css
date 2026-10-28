@@ -12,6 +12,7 @@
   font-family: var(--font-hanken), sans-serif;
 }
 .pp[data-project="ramelli"] { --pp-display: var(--font-newsreader), serif; --pp-display-weight: 400; --pp-display-track: -.035em; }
+.pp[data-project="querno"] { --pp-display: var(--font-lm-display), serif; --pp-display-weight: 400; --pp-display-track: -.02em; --pp-display-leading: 1.06; }
 .pp[data-project="gallery-glow"] { --pp-display: var(--font-cormorant-garamond), serif; --pp-display-weight: 500; --pp-display-track: -.025em; --pp-display-leading: .98; }
 .pp[data-project="biketrack"] { --pp-display: var(--font-oswald), sans-serif; --pp-display-track: -.02em; --pp-display-case: uppercase; --pp-display-leading: 1; }
 .pp[data-project="mugshot"] { --pp-display: var(--font-fraunces), serif; --pp-display-track: -.05em; font-family: var(--font-nunito), sans-serif; }
@@ -112,6 +113,24 @@ body:has(.project-loader:not([data-leaving])) .pp-rise { animation-play-state: p
 .ramelli-providers { display: flex; flex-wrap: wrap; gap: 18px 36px; padding-top: 28px; border-top: 1px solid hsl(var(--border)); }
 .ramelli-providers li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: hsl(var(--foreground-soft)); }
 
+/* ── Querno: porcelain and cobalt, set in Latin Modern ────── */
+.querno-theme { --background: 240 9% 94%; --card: 0 0% 99%; --foreground: 240 6% 17%; --foreground-soft: 240 4% 30%; --foreground-muted: 240 4% 40%; --foreground-subtle: 240 4% 46%; --foreground-faint: 240 5% 62%; --muted-foreground: 240 4% 40%; --border: 240 9% 86%; --gold: 226 54% 48%; --ring: 226 54% 48%; --querno-command: #4b60a5; --querno-brace: #8a8a95; --querno-math: #86613a; --querno-paper: #fff; --querno-ink: #1c1c1f; }
+.dark .querno-theme { --background: 240 8% 10%; --card: 240 7% 13%; --foreground: 240 12% 94%; --foreground-soft: 240 6% 78%; --foreground-muted: 240 6% 67%; --foreground-subtle: 240 5% 58%; --foreground-faint: 240 5% 45%; --muted-foreground: 240 6% 67%; --border: 240 7% 22%; --gold: 228 100% 78%; --ring: 228 100% 78%; --querno-command: #a3b4f4; --querno-brace: #8d8d9c; --querno-math: #dbb58a; --querno-paper: #26262c; --querno-ink: #ededf1; }
+.querno-window { overflow: hidden; border-radius: 14px; box-shadow: 0 0 0 1px hsl(var(--border)), 0 40px 70px -40px hsl(240 30% 12% / .45); }
+.querno-window img { width: 100%; height: auto; }
+.querno-demo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); overflow: hidden; border: 1px solid hsl(var(--border)); border-radius: 14px; background: hsl(var(--card)); }
+.querno-demo figure { display: flex; flex-direction: column; min-height: 280px; }
+.querno-demo figure + figure { border-left: 1px solid hsl(var(--border)); background: hsl(var(--background)); }
+.querno-demo figcaption { padding: 12px 20px; border-bottom: 1px solid hsl(var(--border)); font-size: 12px; color: hsl(var(--foreground-muted)); }
+.querno-demo code { flex: 1; padding: 28px 24px; font-family: var(--font-ibm-plex-mono), monospace; font-size: 15px; line-height: 1.8; white-space: pre-wrap; color: hsl(var(--foreground)); }
+.querno-demo [data-token="command"] { color: var(--querno-command); }
+.querno-demo [data-token="brace"] { color: var(--querno-brace); }
+.querno-demo [data-token="math"] { color: var(--querno-math); }
+.querno-paper { flex: 1; display: grid; place-items: center; margin: 24px; padding: 32px 28px; background: var(--querno-paper); color: var(--querno-ink); box-shadow: 0 1px 2px #25253614, 0 12px 28px -14px #25253633; font-family: var(--font-lm-roman), serif; font-size: 21px; line-height: 1.5; animation: pp-rise .5s var(--pp-ease); }
+.querno-paper math { font-family: var(--font-lm-math), math; font-size: 1.25em; }
+.querno-section p:first-child { margin-bottom: 10px; font-size: 1.15em; font-weight: 700; }
+.querno-section span { margin-right: 1em; }
+
 /* ── Gallery Glow: paper, ink and a little gold ───────────── */
 .gallery-theme { --background: 45 20% 96%; --card: 42 25% 99%; --foreground: 60 8% 7%; --foreground-soft: 45 4% 29%; --foreground-muted: 45 4% 42%; --foreground-subtle: 45 4% 48%; --foreground-faint: 45 5% 66%; --muted-foreground: 45 4% 42%; --border: 45 10% 84%; --gold: 40 72% 32%; --ring: 40 72% 32%; }
 .dark .gallery-theme { --background: 45 6% 8%; --card: 45 5% 11%; --foreground: 45 20% 94%; --foreground-soft: 45 8% 77%; --foreground-muted: 45 5% 61%; --foreground-subtle: 45 5% 55%; --foreground-faint: 45 5% 38%; --muted-foreground: 45 5% 61%; --border: 45 5% 23%; --gold: 44 78% 60%; --ring: 44 78% 60%; }
@@ -208,6 +227,10 @@ body:has(.project-loader:not([data-leaving])) .pp-rise { animation-play-state: p
   .bike-readout { font-size: 76px; }
   .mug-phone { width: 230px; }
   .phish-mail, .phish-verdict { padding: 22px; }
+  .querno-demo { grid-template-columns: 1fr; }
+  .querno-demo figure { min-height: 0; }
+  .querno-demo figure + figure { border-left: 0; border-top: 1px solid hsl(var(--border)); }
+  .querno-paper { margin: 20px; padding: 28px 20px; font-size: 19px; }
 }
 
 /* Shared widgets: the install command and Ramelli's workflow controls. */
@@ -286,7 +309,7 @@ body:has(.project-loader:not([data-leaving])) .pp-rise { animation-play-state: p
 .pl-verdict-tick { animation-delay: .85s; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pp-rise, .pp-reveal, .bike-readout, .phish-verdict-word, [role="tabpanel"] img, .pl-art, .pl-title > span, .pl-line { animation: none; }
+  .pp-rise, .pp-reveal, .bike-readout, .phish-verdict-word, .querno-paper, [role="tabpanel"] img, .pl-art, .pl-title > span, .pl-line { animation: none; }
   .pl-art * { animation: none !important; stroke-dashoffset: 0; opacity: 1; transform: none; }
   .pp-next a::before, .pp-button, .mug-phone { transition: none; }
 }

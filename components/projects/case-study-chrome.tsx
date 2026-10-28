@@ -14,7 +14,8 @@ import { PROJECT_SIGNATURES, startProjectSignatureTransition, type ProjectSignat
  */
 
 type PageId = ProjectSignature["id"];
-const ORDER: PageId[] = ["glui", "ramelli", "gallery-glow", "biketrack", "mugshot", "nlp-phishing-detection"];
+// Mugshot and Phishing Detection are parked for now, so they sit outside the cycle.
+const ORDER: PageId[] = ["glui", "ramelli", "querno", "gallery-glow", "biketrack"];
 
 export function ProjectPage({ id, theme, children }: { id: PageId; theme: string; children: ReactNode }) {
   return (

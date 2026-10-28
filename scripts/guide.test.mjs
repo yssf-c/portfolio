@@ -56,6 +56,7 @@ test("anchors the guide links to exist on the pages that render them", () => {
   const pages = {
     glui: "glui-experience",
     ramelli: "atlasllm-experience",
+    querno: "querno-experience",
     mugshot: "mugshot-experience",
     "nlp-phishing-detection": "nlp-phishing-experience",
     "gallery-glow": "gallery-glow-experience",

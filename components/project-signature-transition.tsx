@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 // Preserve the public event API used by project cards and AI answer links.
 const PROJECT_SIGNATURE_EVENT = "portfolio:project-signature-transition";
-type ProjectId = "ramelli" | "glui" | "gallery-glow" | "biketrack" | "mugshot" | "nlp-phishing-detection";
+type ProjectId = "ramelli" | "glui" | "querno" | "gallery-glow" | "biketrack" | "mugshot" | "nlp-phishing-detection";
 
 /** Each project opens on its own color, in its own typeface. */
 export type ProjectSignature = {
@@ -26,6 +26,10 @@ export const PROJECT_SIGNATURES: Record<ProjectId, ProjectSignature> = {
   ramelli: {
     id: "ramelli", title: "Ramelli", line: "An AI chat workspace",
     bg: "#eb5823", fg: "#1f0e07", accent: "#fff1e8", font: "var(--font-newsreader), serif",
+  },
+  querno: {
+    id: "querno", title: "Querno", line: "A LaTeX editor for the Mac",
+    bg: "#4564d8", fg: "#fdfdfd", accent: "#c4cdf3", font: "var(--font-lm-display), serif",
   },
   "gallery-glow": {
     id: "gallery-glow", title: "Gallery Glow", line: "Paintings for Apple TV",
@@ -81,6 +85,13 @@ function SignatureArt({ id }: { id: ProjectId }) {
           <path key={d} className="pl-draw pl-branch" pathLength={1} d={d} style={{ "--n": i } as CSSProperties} />)}
         <circle cx="8" cy="32" r="3" fill="currentColor" />
         {[16, 32, 48].map((y, i) => <circle key={y} className="pl-pop" cx="52" cy={y} r="3.5" fill="var(--pl-accent)" stroke="currentColor" strokeWidth="1.5" style={{ "--n": i } as CSSProperties} />)}
+      </>}
+      {id === "querno" && <>
+        <path d="M17 8h22l8 8v40H17z M39 8v8h8" opacity=".45" />
+        <path className="pl-draw" pathLength={1} d="M25 20h10" stroke="var(--pl-accent)" strokeWidth="2.5" />
+        {["M23 30h18", "M23 37h18", "M23 44h11"].map((d, i) =>
+          <path key={d} className="pl-draw pl-branch" pathLength={1} d={d} style={{ "--n": i + 1 } as CSSProperties} />)}
+        <path className="pl-blink" d="M38 41v6" strokeWidth="2.5" />
       </>}
       {id === "gallery-glow" && <>
         <defs><clipPath id={clip}><rect x="15" y="17" width="34" height="26" /></clipPath></defs>
