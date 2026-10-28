@@ -20,11 +20,14 @@ export type ProjectDetail = {
   timeline?: string;
   contributors?: string[];
   link?: string;
+  /** Off the work list, sitemap and chat for now, but its page still opens from a direct link. */
+  parked?: boolean;
   size?: "small" | "large";
   icon?: React.ReactNode;
 };
 
-export const projects: ProjectDetail[] = [
+/** Every project page, including parked ones. */
+export const allProjects: ProjectDetail[] = [
   {
     id: "glui",
     title: "GLUI",
@@ -108,6 +111,44 @@ export const projects: ProjectDetail[] = [
     timeline: "Recent",
     contributors: ["Youssef Chouay"],
     link: "https://ramelli.chat/chat",
+    size: "large",
+  },
+  {
+    id: "querno",
+    title: "Querno",
+    category: "Local LaTeX Editor for Mac",
+    description: [
+      "A local LaTeX editor with a live PDF preview. Projects, PDFs, and version history stay on your own disk, with no account and no analytics.",
+      "Built a React and CodeMirror editor beside a PDF.js preview with two-way SyncTeX navigation, served by a loopback-only Node service that typesets with a bundled, SHA-256-verified copy of Tectonic.",
+      "Every save is committed to a private Git repository per project, and a native Swift shell wraps the editor in its own Mac window with menus, file pickers, and export dialogs.",
+    ],
+    image: "/querno/editor-light.webp",
+    hoverPreview: {
+      device: "mac",
+      src: "/querno/editor-light.webp",
+      darkSrc: "/querno/editor-dark.webp",
+      objectPosition: "center top",
+    },
+    technologies: [
+      "React",
+      "TypeScript",
+      "CodeMirror",
+      "PDF.js",
+      "Node.js",
+      "Express",
+      "Tectonic",
+      "isomorphic-git",
+      "Swift",
+      "WebKit",
+    ],
+    chapters: [
+      { id: "typesetting", label: "On the page" },
+      { id: "library", label: "The library" },
+      { id: "engineering", label: "How it’s built" },
+    ],
+    timeline: "Oct 2026",
+    contributors: ["Youssef Chouay"],
+    link: "https://querno.vercel.app",
     size: "large",
   },
   {
@@ -216,6 +257,7 @@ export const projects: ProjectDetail[] = [
     timeline: "Jun 2026",
     contributors: ["Youssef Chouay"],
     link: "https://yssf-c.github.io/Mugshot/",
+    parked: true,
     size: "small",
   },
   // {
@@ -285,10 +327,14 @@ export const projects: ProjectDetail[] = [
     timeline: "Jan 2024 - Dec 2024",
     contributors: ["Youssef Chouay", "Group 30 Capstone Team"],
     link: "https://github.com/capstone-2024-T91/Image-Processing-and-NLP-for-Brand-Protection",
+    parked: true,
     size: "large",
   },
 ];
 
+/** The projects the site lists. */
+export const projects = allProjects.filter((project) => !project.parked);
+
 export function getProjectById(id: string): ProjectDetail | undefined {
-  return projects.find((project) => project.id === id);
+  return allProjects.find((project) => project.id === id);
 }

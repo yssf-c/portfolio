@@ -15,6 +15,7 @@ import {
   Pinyon_Script,
   Roboto_Mono,
 } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import "./project-pages.css";
 import "./glui.css";
@@ -122,6 +123,34 @@ const nunito = Nunito({
   display: "swap",
 });
 
+// Querno identity: Latin Modern, the typeface of a LaTeX page (GUST Font
+// License; the math font is subset to the demo's glyphs). Only its page uses
+// it, so nothing preloads.
+const lmDisplay = localFont({
+  src: "./fonts/lmroman17-regular.otf",
+  variable: "--font-lm-display",
+  display: "swap",
+  preload: false,
+});
+
+const lmRoman = localFont({
+  src: [
+    { path: "./fonts/lmroman10-regular.otf", weight: "400", style: "normal" },
+    { path: "./fonts/lmroman10-italic.otf", weight: "400", style: "italic" },
+    { path: "./fonts/lmroman10-bold.otf", weight: "700", style: "normal" },
+  ],
+  variable: "--font-lm-roman",
+  display: "swap",
+  preload: false,
+});
+
+const lmMath = localFont({
+  src: "./fonts/latinmodern-math-subset.woff2",
+  variable: "--font-lm-math",
+  display: "swap",
+  preload: false,
+});
+
 const fontVariables = [
   inter.variable,
   hanken.variable,
@@ -136,6 +165,9 @@ const fontVariables = [
   ibmPlexMono.variable,
   fraunces.variable,
   nunito.variable,
+  lmDisplay.variable,
+  lmRoman.variable,
+  lmMath.variable,
 ].join(" ");
 
 export const metadata: Metadata = {
