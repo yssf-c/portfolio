@@ -20,11 +20,14 @@ export type ProjectDetail = {
   timeline?: string;
   contributors?: string[];
   link?: string;
+  /** Off the work list, sitemap and chat for now, but its page still opens from a direct link. */
+  parked?: boolean;
   size?: "small" | "large";
   icon?: React.ReactNode;
 };
 
-export const projects: ProjectDetail[] = [
+/** Every project page, including parked ones. */
+export const allProjects: ProjectDetail[] = [
   {
     id: "glui",
     title: "GLUI",
@@ -223,40 +226,40 @@ export const projects: ProjectDetail[] = [
   //   link: "https://github.com/yourusername/chessLLM",
   //   size: "large",
   // },
-  // Parked for the "see more" section; its page, assets and transition are kept.
-  // {
-  //   id: "mugshot",
-  //   title: "Mugshot",
-  //   category: "iOS Application",
-  //   description: [
-  //     "A quiet coffee journal for iPhone and iPad. Photograph a cup, save it to your calendar, and get to know your coffee habits.",
-  //     "Built with SwiftUI and on-device Vision for drink suggestions and photo cutouts. Local storage, WidgetKit, and optional Apple Health sync keep the daily ritual close.",
-  //   ],
-  //   image: "/mugshot/icon.png",
-  //   imageLink: "/mugshot/wrapped-light.PNG",
-  //   hoverPreview: {
-  //     device: "iphone",
-  //     src: "/mugshot/calendar-light.webp",
-  //     darkSrc: "/mugshot/calendar-dark.webp",
-  //     objectPosition: "center top",
-  //   },
-  //   technologies: [
-  //     "Swift",
-  //     "SwiftUI",
-  //     "Vision",
-  //     "Core Image",
-  //     "WidgetKit",
-  //     "HealthKit",
-  //   ],
-  //   chapters: [
-  //     { id: "ritual", label: "How it works" },
-  //     { id: "craft", label: "How it’s built" },
-  //   ],
-  //   timeline: "Jun 2026",
-  //   contributors: ["Youssef Chouay"],
-  //   link: "https://yssf-c.github.io/Mugshot/",
-  //   size: "small",
-  // },
+  {
+    id: "mugshot",
+    title: "Mugshot",
+    category: "iOS Application",
+    description: [
+      "A quiet coffee journal for iPhone and iPad. Photograph a cup, save it to your calendar, and get to know your coffee habits.",
+      "Built with SwiftUI and on-device Vision for drink suggestions and photo cutouts. Local storage, WidgetKit, and optional Apple Health sync keep the daily ritual close.",
+    ],
+    image: "/mugshot/icon.png",
+    imageLink: "/mugshot/wrapped-light.PNG",
+    hoverPreview: {
+      device: "iphone",
+      src: "/mugshot/calendar-light.webp",
+      darkSrc: "/mugshot/calendar-dark.webp",
+      objectPosition: "center top",
+    },
+    technologies: [
+      "Swift",
+      "SwiftUI",
+      "Vision",
+      "Core Image",
+      "WidgetKit",
+      "HealthKit",
+    ],
+    chapters: [
+      { id: "ritual", label: "How it works" },
+      { id: "craft", label: "How it’s built" },
+    ],
+    timeline: "Jun 2026",
+    contributors: ["Youssef Chouay"],
+    link: "https://yssf-c.github.io/Mugshot/",
+    parked: true,
+    size: "small",
+  },
   // {
   //   id: "ledgerglass",
   //   title: "LedgerGlass, Privacy-First macOS Finance App",
@@ -281,54 +284,57 @@ export const projects: ProjectDetail[] = [
   //   link: "https://github.com/yssf-c/ledgerUI",
   //   size: "small",
   // },
-  // Parked for the "see more" section; its page, assets and transition are kept.
-  // {
-  //   id: "nlp-phishing-detection",
-  //   title: "NLP Phishing Detection",
-  //   category: "Bell Canada Research Project",
-  //   description: [
-  //     "Built a phishing-email detector with fine-tuned DistilBERT and RoBERTa classifiers, plus OpenAI, Claude, and Ollama inference adapters behind one model-selection interface.",
-  //     "Shipped a Flask API that preloads the models at startup, exposes GET /detect_phishing, and was containerized with Docker for deployment on a Hetzner VPS behind Nginx and Let's Encrypt SSL.",
-  //     "Connected the backend to a Manifest V3 Chrome extension that reads the open Gmail message, sends the cleaned email body to the detector, and injects a Safe or Caution badge directly into the inbox UI.",
-  //   ],
-  //   image: "/NLP-phishing/capstone-light.png",
-  //   imageLink: "/NLP-phishing/capstone-phishing-light.png",
-  //   hoverPreview: {
-  //     device: "browser",
-  //     src: "/NLP-phishing/capstone-light.png",
-  //     darkSrc: "/NLP-phishing/capstone-dark.png",
-  //     fit: "contain",
-  //     objectPosition: "center top",
-  //     aspectRatio: "16 / 9",
-  //   },
-  //   technologies: [
-  //     "Python",
-  //     "Transformers",
-  //     "PyTorch",
-  //     "RoBERTa",
-  //     "DistilBERT",
-  //     "NLP",
-  //     "OpenAI",
-  //     "Anthropic",
-  //     "Ollama",
-  //     "Flask",
-  //     "Docker",
-  //     "Nginx",
-  //     "Chrome Extension API"
-  //   ],
-  //   chapters: [
-  //     { id: "overview", label: "In the inbox" },
-  //     { id: "scanner", label: "Try a message" },
-  //     { id: "pipeline", label: "The system" },
-  //     { id: "models", label: "The models" },
-  //   ],
-  //   timeline: "Jan 2024 - Dec 2024",
-  //   contributors: ["Youssef Chouay", "Group 30 Capstone Team"],
-  //   link: "https://github.com/capstone-2024-T91/Image-Processing-and-NLP-for-Brand-Protection",
-  //   size: "large",
-  // },
+  {
+    id: "nlp-phishing-detection",
+    title: "NLP Phishing Detection",
+    category: "Bell Canada Research Project",
+    description: [
+      "Built a phishing-email detector with fine-tuned DistilBERT and RoBERTa classifiers, plus OpenAI, Claude, and Ollama inference adapters behind one model-selection interface.",
+      "Shipped a Flask API that preloads the models at startup, exposes GET /detect_phishing, and was containerized with Docker for deployment on a Hetzner VPS behind Nginx and Let's Encrypt SSL.",
+      "Connected the backend to a Manifest V3 Chrome extension that reads the open Gmail message, sends the cleaned email body to the detector, and injects a Safe or Caution badge directly into the inbox UI.",
+    ],
+    image: "/NLP-phishing/capstone-light.png",
+    imageLink: "/NLP-phishing/capstone-phishing-light.png",
+    hoverPreview: {
+      device: "browser",
+      src: "/NLP-phishing/capstone-light.png",
+      darkSrc: "/NLP-phishing/capstone-dark.png",
+      fit: "contain",
+      objectPosition: "center top",
+      aspectRatio: "16 / 9",
+    },
+    technologies: [
+      "Python",
+      "Transformers",
+      "PyTorch",
+      "RoBERTa",
+      "DistilBERT",
+      "NLP",
+      "OpenAI",
+      "Anthropic",
+      "Ollama",
+      "Flask",
+      "Docker",
+      "Nginx",
+      "Chrome Extension API"
+    ],
+    chapters: [
+      { id: "overview", label: "In the inbox" },
+      { id: "scanner", label: "Try a message" },
+      { id: "pipeline", label: "The system" },
+      { id: "models", label: "The models" },
+    ],
+    timeline: "Jan 2024 - Dec 2024",
+    contributors: ["Youssef Chouay", "Group 30 Capstone Team"],
+    link: "https://github.com/capstone-2024-T91/Image-Processing-and-NLP-for-Brand-Protection",
+    parked: true,
+    size: "large",
+  },
 ];
 
+/** The projects the site lists. */
+export const projects = allProjects.filter((project) => !project.parked);
+
 export function getProjectById(id: string): ProjectDetail | undefined {
-  return projects.find((project) => project.id === id);
+  return allProjects.find((project) => project.id === id);
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getProjectById, projects } from "@/lib/project-data";
+import { allProjects, getProjectById } from "@/lib/project-data";
 import {
   ProjectDetailView,
   type SerializableProject,
@@ -15,7 +15,7 @@ import {
 } from "@/lib/seo";
 
 export function generateStaticParams() {
-  return projects.map((p) => ({ id: p.id }));
+  return allProjects.map((p) => ({ id: p.id }));
 }
 
 export async function generateMetadata({

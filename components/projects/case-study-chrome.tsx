@@ -14,7 +14,7 @@ import { PROJECT_SIGNATURES, startProjectSignatureTransition, type ProjectSignat
  */
 
 type PageId = ProjectSignature["id"];
-// Mugshot and Phishing Detection are parked for now, so they sit outside the cycle.
+// Parked pages (Mugshot, Phishing Detection) sit outside the cycle and lead back into it.
 const ORDER: PageId[] = ["glui", "ramelli", "querno", "gallery-glow", "biketrack"];
 
 export function ProjectPage({ id, theme, children }: { id: PageId; theme: string; children: ReactNode }) {
