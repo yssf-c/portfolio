@@ -424,28 +424,39 @@ function IndexReader() {
                     {r.role}
                   </h3>
                   <p className="mt-2 text-[hsl(var(--foreground-soft))]">
-                    <CompanyLink role={r} />{" "}
-                    <span className="text-[hsl(var(--foreground-faint))]">·</span>{" "}
-                    <span className="text-[hsl(var(--foreground-muted))]">{r.location}</span>
+                    <CompanyLink role={r} />
+                    {r.location && (
+                      <>
+                        {" "}
+                        <span className="text-[hsl(var(--foreground-faint))]">·</span>{" "}
+                        <span className="text-[hsl(var(--foreground-muted))]">{r.location}</span>
+                      </>
+                    )}
                   </p>
                 </div>
-                <div className="hidden shrink-0 text-right sm:block">
-                  <div className="text-4xl font-light tracking-tight text-[hsl(var(--gold))]">
-                    {r.metric.value}
+                {r.metric && (
+                  <div className="hidden shrink-0 text-right sm:block">
+                    <div className="text-4xl font-light tracking-tight text-[hsl(var(--gold))]">
+                      {r.metric.value}
+                    </div>
+                    <Eyebrow className="mt-1 block text-[10px]">{r.metric.label}</Eyebrow>
                   </div>
-                  <Eyebrow className="mt-1 block text-[10px]">{r.metric.label}</Eyebrow>
-                </div>
+                )}
               </div>
 
               <p className="mt-8 max-w-2xl text-lg font-light text-[hsl(var(--foreground-soft))]">
                 {r.summary}
               </p>
-              <div className="mt-8 max-w-2xl">
-                <Bullets role={r} />
-              </div>
-              <div className="mt-8">
-                <Stack items={r.stack} />
-              </div>
+              {r.groups.length > 0 && (
+                <div className="mt-8 max-w-2xl">
+                  <Bullets role={r} />
+                </div>
+              )}
+              {r.stack.length > 0 && (
+                <div className="mt-8">
+                  <Stack items={r.stack} />
+                </div>
+              )}
             </article>
           ))}
         </div>

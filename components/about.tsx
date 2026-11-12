@@ -185,8 +185,8 @@ export function About() {
                 I&apos;m slowly chipping the iceberg of knowledge hoping to make a
                 big enough dent to make my younger self proud. Currently
                 pursuing a Master&apos;s in Computer Science with a focus on Graph
-                Theory, and working as an AI researcher for the Canadian
-                National Research Council. I&apos;m constantly exploring new
+                Theory, and working as a software engineer at Magnet
+                Forensics. I&apos;m constantly exploring new
                 technologies and ways to contribute.
               </p>
             </div>
