@@ -21,7 +21,7 @@ export const personSchema = {
   jobTitle: "Software Engineer & AI Researcher",
   worksFor: {
     "@type": "Organization",
-    name: "National Research Council Canada",
+    name: "Magnet Forensics",
   },
   alumniOf: {
     "@type": "CollegeOrUniversity",

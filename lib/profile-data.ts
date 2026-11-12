@@ -14,17 +14,30 @@ export type Role = {
   company: string;
   short: string;
   url: string;
-  location: string;
+  location?: string;
   period: string;
   start: YearMonth;
   end: YearMonth | null; // null = present
   summary: string;
-  metric: { value: string; label: string };
+  metric?: { value: string; label: string };
   stack: string[];
   groups: { name?: string; bullets: string[] }[];
 };
 
 export const roles: Role[] = [
+  {
+    id: "magnet",
+    role: "Software Engineer",
+    company: "Magnet Forensics",
+    short: "Magnet",
+    url: "https://www.magnetforensics.com/",
+    period: "Nov 2026 – Present",
+    start: [2026, 10],
+    end: null,
+    summary: "Software engineering for digital forensics.",
+    stack: [],
+    groups: [],
+  },
   {
     id: "trend",
     role: "Software Engineer Intern",
@@ -32,9 +45,9 @@ export const roles: Role[] = [
     short: "TrendAI",
     url: "https://www.trendmicro.com/",
     location: "Ottawa, ON",
-    period: "Jan 2026 – Present",
+    period: "Jan 2026 – Aug 2026",
     start: [2026, 0],
-    end: null,
+    end: [2026, 8],
     summary: "LLM threat detection on the AI Security team.",
     metric: { value: "4×", label: "faster inference" },
     stack: ["Rust", "Go", "AWS", "MCP", "LLM security"],
@@ -56,9 +69,9 @@ export const roles: Role[] = [
     short: "NRC",
     url: "https://nrc.canada.ca/en",
     location: "Ottawa, ON",
-    period: "May 2024 – Present",
+    period: "May 2024 – Nov 2026",
     start: [2024, 4],
-    end: null,
+    end: [2026, 11],
     summary: "First-author research putting LLM agents inside buildings and utilities.",
     metric: { value: "56%", label: "lower maintenance costs" },
     stack: ["Python", "LangChain", "Multi-agent", "SQLite", "Time-series"],

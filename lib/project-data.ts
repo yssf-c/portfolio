@@ -63,7 +63,7 @@ export const allProjects: ProjectDetail[] = [
       { id: "architecture", label: "How it works" },
       { id: "get-started", label: "Install" },
     ],
-    timeline: "Recent",
+    timeline: "Aug 2026",
     contributors: ["Youssef Chouay"],
     link: "https://github.com/yssf-c/glui",
     size: "large",
@@ -235,7 +235,7 @@ export const allProjects: ProjectDetail[] = [
       "Built with SwiftUI and on-device Vision for drink suggestions and photo cutouts. Local storage, WidgetKit, and optional Apple Health sync keep the daily ritual close.",
     ],
     image: "/mugshot/icon.png",
-    imageLink: "/mugshot/wrapped-light.PNG",
+    imageLink: "/mugshot/wrapped-light.webp",
     hoverPreview: {
       device: "iphone",
       src: "/mugshot/calendar-light.webp",

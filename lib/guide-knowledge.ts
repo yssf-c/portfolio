@@ -118,10 +118,10 @@ export function buildKnowledge(input: KnowledgeInput): SiteKnowledge {
       context: role.role,
       href: `/#xp-${role.id}`,
       text: lines(
-        `${role.role} at ${role.company}, ${role.location}, ${role.period}.`,
+        `${role.role} at ${[role.company, role.location].filter(Boolean).join(", ")}, ${role.period}.`,
         role.summary,
-        `Headline result: ${role.metric.value} ${role.metric.label}.`,
-        `Stack: ${role.stack.join(", ")}.`,
+        role.metric && `Headline result: ${role.metric.value} ${role.metric.label}.`,
+        role.stack.length > 0 && `Stack: ${role.stack.join(", ")}.`,
         ...role.groups.flatMap((group) => [
           group.name && `${group.name}:`,
           ...group.bullets.map((bullet) => `- ${markdownToText(bullet)}`),

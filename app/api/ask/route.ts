@@ -35,8 +35,10 @@ const MAX_ANSWER_TOKENS = 750;
 // only adds latency. Every model in MODEL_PRICING accepts this.
 const REASONING = { effort: "none" };
 
-// Per-IP sliding-window rate limit. In-memory, so it's per serverless
-// instance, best-effort protection, not a hard guarantee.
+// Per-IP rate limit. With an Upstash Redis database configured (directly or
+// through the Vercel marketplace), every serverless instance shares one fixed-
+// window counter per IP. Without one, or if Redis can't be reached, each
+// instance falls back to its own in-memory sliding window: best effort only.
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 10;
 const rateLimitBuckets = new Map<string, number[]>();
@@ -46,7 +48,41 @@ function getClientIp(req: Request): string {
   return forwarded?.split(",")[0]?.trim() || "unknown";
 }
 
-function isRateLimited(ip: string): boolean {
+const REDIS_URL =
+  process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+const REDIS_TOKEN =
+  process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+
+async function isRateLimited(ip: string): Promise<boolean> {
+  if (REDIS_URL && REDIS_TOKEN) {
+    try {
+      const windowSeconds = RATE_LIMIT_WINDOW_MS / 1000;
+      const window = Math.floor(Date.now() / RATE_LIMIT_WINDOW_MS);
+      const key = `ask-rate:${ip}:${window}`;
+      const res = await fetch(`${REDIS_URL}/pipeline`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${REDIS_TOKEN}` },
+        body: JSON.stringify([
+          ["INCR", key],
+          ["EXPIRE", key, windowSeconds * 2],
+        ]),
+        cache: "no-store",
+        signal: AbortSignal.timeout(1500),
+      });
+      if (res.ok) {
+        const [incr] = (await res.json()) as { result?: number }[];
+        if (typeof incr?.result === "number") {
+          return incr.result > RATE_LIMIT_MAX_REQUESTS;
+        }
+      }
+    } catch {
+      // Fall through to the per-instance limiter.
+    }
+  }
+  return isRateLimitedLocally(ip);
+}
+
+function isRateLimitedLocally(ip: string): boolean {
   const now = Date.now();
   const windowStart = now - RATE_LIMIT_WINDOW_MS;
   const timestamps = (rateLimitBuckets.get(ip) ?? []).filter(
@@ -191,7 +227,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (isRateLimited(getClientIp(req))) {
+    if (await isRateLimited(getClientIp(req))) {
       return NextResponse.json(
         { error: "Too many requests. Please slow down." },
         { status: 429 }
@@ -357,7 +393,7 @@ export async function GET(req: Request) {
     return new Response("Service unavailable", { status: 503 });
   }
 
-  if (isRateLimited(getClientIp(req))) {
+  if (await isRateLimited(getClientIp(req))) {
     return new Response("Too many requests. Please slow down.", {
       status: 429,
     });
