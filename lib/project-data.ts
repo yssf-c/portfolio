@@ -169,11 +169,11 @@ export const allProjects: ProjectDetail[] = [
       "Built a Rust core on Tauri 2 that keeps mail, full-text search and a durable action queue in SQLite, syncs in the background, and talks to Gmail, Microsoft Graph and IMAP/SMTP through a single provider trait.",
       "Archive, trash and send apply on the device first and wait a few seconds before reaching the provider, so Undo can recall them. Mail renders in a sanitized, isolated frame, and sign-ins stay in the system keychain.",
     ],
-    image: "/ternpost/inbox-light.webp",
+    image: "/ternpost/app/inbox-paper-light.webp",
     hoverPreview: {
       device: "mac",
-      src: "/ternpost/inbox-light.webp",
-      darkSrc: "/ternpost/inbox-dark.webp",
+      src: "/ternpost/app/inbox-paper-light.webp",
+      darkSrc: "/ternpost/app/inbox-paper-dark.webp",
       objectPosition: "left top",
     },
     technologies: [

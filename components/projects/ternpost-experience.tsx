@@ -1,19 +1,125 @@
 "use client";
 
-import { useState, type KeyboardEvent } from "react";
+import { useEffect, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import Image from "next/image";
+import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
+import { useTheme } from "next-themes";
 import type { SerializableProject } from "@/components/project-detail";
-import { Facts, Hero, ProjectPage, Rows, Section, TabList } from "@/components/projects/case-study-chrome";
+import { Facts, Hero, ProjectPage, Rows, Section } from "@/components/projects/case-study-chrome";
 
 const EARLY_ACCESS = "https://ternpost.vercel.app/#early-access";
 
+type Mode = "light" | "dark";
+
+/** The four screens the website shows, captured from the current build with sample mail. */
 const VIEWS = [
-  { id: "inbox", label: "Inbox", alt: "Ternpost’s inbox, with the account sidebar, a list of conversations and the open message", text: "Every account in one list, with notifications and newsletters bundled out of the way." },
-  { id: "reply", label: "Reply", alt: "Ternpost replying to a conversation, with the composer open below the message", text: "Reply in place with R. Signatures, templates, scheduled sending and Send & Archive are a key away." },
-  { id: "search", label: "Search", alt: "Ternpost’s search results for “budget”, with the matching conversation open", text: "Search reads the mail on your device first, then asks your provider for anything older." },
-  { id: "commands", label: "Command palette", alt: "Ternpost’s command palette filtered to “sno”, listing Snooze and other commands with their shortcuts", text: "⌘K finds every command by name, and shows the key that does it next time." },
+  { id: "inbox", label: "Inbox", key: "J", alt: "a sidebar of mailboxes and three accounts, a list of conversations grouped by day, and the selected conversation open on the right", caption: <>Every account in one list, with notifications and newsletters bundled out of the way.</> },
+  { id: "commands", label: "Commands", key: "⌘K", alt: "the command palette over the inbox, filtered by the letters sno, with Snooze and its H shortcut first", caption: <><kbd>⌘K</kbd> finds any command by name and shows its shortcut, so you learn it for next time.</> },
+  { id: "search", label: "Search", key: "/", alt: "a search for budget returning one conversation, opened with its spreadsheet attachment", caption: <>Search answers from the mail on your Mac first, so results appear as you type.</> },
+  { id: "reply", label: "Reply", key: "R", alt: "an inline reply being written under a dinner invitation, with Send and Send and Archive buttons", caption: <>Replies open in place. <kbd>⌘</kbd><kbd>⇧</kbd><kbd>↵</kbd> sends and archives in one go.</> },
 ];
+
+/** The app’s seven themes. Colours are bg, surface, text, muted, accent and line, as on the website. */
+const THEMES = [
+  { id: "paper", name: "Paper", description: "Warm off-white, ink-brown type and a terracotta accent. Reads like a well-set letter.", light: "#f6f2ea,#fffdf8,#22190f,#5f5446,#b2461f,#e7dfd2", dark: "#141110,#1c1816,#f3ece4,#b9ad9f,#e07a52,#332c27" },
+  { id: "classic", name: "Classic", description: "Neutral greys with a bright, familiar blue. The safe choice that never gets in the way.", light: "#f5f5f7,#ffffff,#18181c,#5d5d68,#0871dc,#e6e6eb", dark: "#0f0f12,#17171b,#f1f1f4,#a8a8b3,#0871dc,#2a2a31" },
+  { id: "graphite", name: "Graphite", description: "Monochrome and quiet. Ink is the accent; only unread mail gets colour.", light: "#f4f4f5,#ffffff,#111113,#52525b,#18181b,#e4e4e7", dark: "#0b0b0c,#141416,#f4f4f5,#a1a1aa,#f4f4f5,#26262a" },
+  { id: "fjord", name: "Fjord", description: "Cool slate and deep sea blue. Calm, crisp, and very legible at night.", light: "#eef2f6,#ffffff,#0f1a26,#4a5a6b,#24609f,#dde4ec", dark: "#0a1017,#111a24,#e8eef5,#9fb0c2,#5b9be0,#223041" },
+  { id: "sage", name: "Sage", description: "Soft green-grey with a forest accent. Low glare for long triage sessions.", light: "#f1f4ef,#fdfefc,#141b15,#4d5a4f,#2f6e4d,#dfe5dc", dark: "#0c110e,#131a15,#e9f0ea,#a2b3a5,#5fb88a,#233027" },
+  { id: "plum", name: "Plum", description: "Dusky violet neutrals with a jewel-tone accent. Distinctive without shouting.", light: "#f5f2f7,#ffffff,#1a1320,#584d61,#6d3fae,#e6e0eb", dark: "#100c14,#18121e,#f1ebf6,#b4a8bf,#a67de8,#2d2336" },
+  { id: "ember", name: "Ember", description: "Charcoal with amber light, like reading by a lamp. The light side is cream.", light: "#f7f3ec,#fffcf6,#1d1610,#5c5144,#9a5c06,#e8e0d3", dark: "#0e0c0a,#171411,#f5eee4,#b8ab9a,#f0a63a,#2c2620" },
+].map(theme => ({ ...theme, light: theme.light.split(","), dark: theme.dark.split(",") }));
+
+const TOKENS = ["bg", "surface", "text", "muted", "fill", "line"];
+
+const capture = (view: string, theme: string, mode: Mode) => `/ternpost/app/${view}-${theme}-${mode}.webp`;
+
+/** Starts fetching a capture so choosing it feels instant. */
+const warm = (src: string) => { const img = new window.Image(); img.src = src; return img; };
+
+function Screenshot({ name, alt, priority = false }: { name: string; alt: string; priority?: boolean }) {
+  const sizes = "(max-width: 860px) 90vw, 1120px";
+  return <div className="tern-window">
+    <Image src={capture(name, "paper", "light")} alt={alt} width={1920} height={1200} priority={priority} sizes={sizes} className="dark:hidden" />
+    <Image src={capture(name, "paper", "dark")} alt={`${alt}, dark appearance`} width={1920} height={1200} priority={priority} sizes={sizes} className="hidden dark:block" />
+  </div>;
+}
+
+/** Radio buttons drawn as a segmented control, with a pill that slides to the chosen one. */
+function Segmented<T extends string>({ legend, name, options, value, onChange, onWarm }: {
+  legend: string; name: string; options: { id: T; label: ReactNode }[]; value: T; onChange: (id: T) => void; onWarm: (id: T) => void;
+}) {
+  const reduce = useReducedMotion();
+  return <fieldset className={`tern-segmented tern-${name}`}>
+    <legend className="sr-only">{legend}</legend>
+    {options.map(option => <label key={option.id} onPointerEnter={() => onWarm(option.id)}>
+      <input type="radio" name={`tern-${name}`} value={option.id} checked={value === option.id} onChange={() => onChange(option.id)} />
+      {value === option.id && <motion.span layoutId={`tern-${name}-pill`} className="tern-pill" aria-hidden transition={reduce ? { duration: 0 } : { type: "spring", bounce: .18, duration: .45 }} />}
+      <span>{option.label}</span>
+    </label>)}
+  </fieldset>;
+}
+
+/** The website’s theme showcase: pick a view, a theme and an appearance, and the panel takes that theme’s colours. */
+function Showcase() {
+  const { resolvedTheme } = useTheme();
+  const [view, setView] = useState(VIEWS[0].id);
+  const [themeId, setThemeId] = useState(THEMES[0].id);
+  const [chosenMode, setChosenMode] = useState<Mode | null>(null);
+  const mode: Mode = chosenMode ?? (resolvedTheme === "dark" ? "dark" : "light");
+  const theme = THEMES.find(item => item.id === themeId) ?? THEMES[0];
+  const current = VIEWS.find(item => item.id === view) ?? VIEWS[0];
+  const src = capture(view, themeId, mode);
+
+  // The captures on screen, newest last. A new one fades in over the old, which is then dropped.
+  const [layers, setLayers] = useState(() => [src]);
+  useEffect(() => {
+    let live = true;
+    const img = warm(src);
+    img.decode().catch(() => undefined).then(() => {
+      if (live) setLayers(previous => previous.at(-1) === src ? previous : [...previous.slice(-1), src]);
+    });
+    return () => { live = false; };
+  }, [src]);
+  const loading = layers.at(-1) !== src;
+
+  const colours = theme[mode];
+  const style = Object.fromEntries(TOKENS.map((token, index) => [`--tern-${token}`, colours[index]])) as CSSProperties;
+
+  return <div className="tern-showcase" data-mode={mode} data-loading={loading || undefined} style={style} data-guide-skip>
+    <form className="tern-controls" aria-label="Preview the app" onSubmit={event => event.preventDefault()}>
+      <Segmented legend="View" name="view" value={view} onChange={setView} onWarm={id => warm(capture(id, themeId, mode))}
+        options={VIEWS.map(item => ({ id: item.id, label: <><kbd>{item.key}</kbd>{item.label}</> }))} />
+      <div className="tern-looks">
+        <fieldset className="tern-chips">
+          <legend className="sr-only">Theme</legend>
+          {THEMES.map(item => <label key={item.id} title={item.name} onPointerEnter={() => warm(capture(view, item.id, mode))}
+            style={{ "--l-bg": item.light[0], "--l-fill": item.light[4], "--d-bg": item.dark[0], "--d-fill": item.dark[4] } as CSSProperties}>
+            <input type="radio" name="tern-theme" value={item.id} checked={themeId === item.id} onChange={() => setThemeId(item.id)} />
+            <span className="tern-chip" aria-hidden />
+            <span className="sr-only">{item.name}</span>
+          </label>)}
+        </fieldset>
+        <Segmented<Mode> legend="Appearance" name="mode" value={mode} onChange={setChosenMode} onWarm={id => warm(capture(view, themeId, id))}
+          options={[{ id: "light", label: "Light" }, { id: "dark", label: "Dark" }]} />
+      </div>
+    </form>
+
+    <figure className="tern-stage-window">
+      <div className="tern-window-bar" aria-hidden><span /><span /><span /></div>
+      <div className="tern-stage">
+        {layers.map((layer, index) => <Image key={layer} src={layer} fill unoptimized priority={index === 0 && layers.length === 1}
+          alt={index === layers.length - 1 ? `Ternpost’s main window in the ${theme.name} theme, ${mode}: ${current.alt}.` : ""}
+          onAnimationEnd={() => setLayers(previous => previous.at(-1) === layer ? [layer] : previous)} />)}
+      </div>
+      <figcaption>
+        <p>{current.caption}</p>
+        <p aria-live="polite"><strong>{theme.name}, {mode}.</strong> {theme.description}</p>
+      </figcaption>
+    </figure>
+  </div>;
+}
 
 /** Sample mail for the triage demo. Nothing here is sent anywhere. */
 const MAIL = [
@@ -30,14 +136,6 @@ const KEYS = [
   { key: "e", label: "Archive" },
   { key: "z", label: "Undo" },
 ] as const;
-
-function Screenshot({ name, alt, priority = false }: { name: string; alt: string; priority?: boolean }) {
-  const sizes = "(max-width: 860px) 90vw, 1120px";
-  return <div className="tern-window">
-    <Image src={`/ternpost/${name}-light.webp`} alt={alt} width={1920} height={1200} priority={priority} sizes={sizes} className="dark:hidden" />
-    <Image src={`/ternpost/${name}-dark.webp`} alt={`${alt}, dark appearance`} width={1920} height={1200} priority={priority} sizes={sizes} className="hidden dark:block" />
-  </div>;
-}
 
 /** A small inbox driven by the same four keys as the app. */
 function Triage() {
@@ -99,8 +197,6 @@ function Triage() {
 }
 
 export function TernpostExperience({ project }: { project: SerializableProject }) {
-  const [selected, setSelected] = useState(0);
-  const view = VIEWS[selected];
   return <ProjectPage id="ternpost" theme="ternpost-theme">
     <Hero
       layout="stacked"
@@ -113,7 +209,7 @@ export function TernpostExperience({ project }: { project: SerializableProject }
         <a href={EARLY_ACCESS} target="_blank" rel="noopener noreferrer" className="pp-link">Request early access<ArrowUpRight size={14} /></a>
       </>}
       meta="Mac · Gmail, Microsoft 365, Outlook.com, iCloud and IMAP · Early access"
-      visual={<Screenshot name="inbox" alt={VIEWS[0].alt} priority />}
+      visual={<Screenshot name="inbox" alt="Ternpost’s inbox, with the account sidebar, a list of conversations and the open message" priority />}
     />
 
     <Facts items={[
@@ -127,15 +223,9 @@ export function TernpostExperience({ project }: { project: SerializableProject }
       <p>Every action has a key, from snoozing with H to clearing a whole view with ⇧E. Press ? in the app to see them all, or rebind them in Settings.</p>
     </Section>
 
-    <Section id="screens" title="Inside the app" wide={<>
-      <TabList label="Ternpost screens" prefix="ternpost" items={VIEWS} selected={selected} onSelect={setSelected} />
-      <div id="ternpost-panel" role="tabpanel" aria-labelledby={`ternpost-tab-${view.id}`} tabIndex={0}>
-        <Screenshot key={view.id} name={view.id} alt={view.alt} />
-        <p className="pp-caption">{view.text}</p>
-        <p className="pp-note">Screens from the current build, filled with sample mail.</p>
-      </div>
-    </>}>
-      <p>One window: your accounts on the left, the conversation list in the middle, and the message beside it. The app ships with seven themes, each in light and dark; these are Paper.</p>
+    <Section id="screens" title="Try it in any theme" wide={<Showcase />}>
+      <p>One window: your accounts on the left, the conversation list in the middle, and the message beside it. Pick a view, then one of the app’s seven themes in light or dark.</p>
+      <p className="pp-note">Screens from the current build, filled with sample mail.</p>
     </Section>
 
     <Section id="engineering" title="How it’s built">
