@@ -7,7 +7,8 @@ export type ProjectDetail = {
   image: string;
   imageLink?: string;
   hoverPreview?: {
-    device: "mac" | "iphone" | "browser" | "tv" | "watch";
+    /** "float" shows the screenshot on its own, with no device frame (for cut-out app windows). */
+    device: "mac" | "iphone" | "browser" | "tv" | "watch" | "float";
     src: string;
     darkSrc?: string;
     fit?: "cover" | "contain";
@@ -28,46 +29,6 @@ export type ProjectDetail = {
 
 /** Every project page, including parked ones. */
 export const allProjects: ProjectDetail[] = [
-  {
-    id: "glui",
-    title: "GLUI",
-    category: "macOS Agent Workspace",
-    description: [
-      "Evolved Clui into GLUI, a floating macOS workspace for Claude Code, Codex, and OpenCode, with a new burgundy identity, native Liquid Glass, and a compact interface for conversations, tools, and approvals.",
-      "Integrated the Electron and React pill with T3 Code’s Orchestrator V2 runtime through isolated preload and private IPC, bringing durable conversations, agent handoffs, branching, queued prompts, and restart recovery into the overlay.",
-      "Extended the Clui CC foundation with local voice transcription, attachments, a shared skills directory, and native CLI continuation using existing agent authentication. Current releases support Apple Silicon, with Clui v0.1.17 preserved for Intel Macs.",
-    ],
-    image: "/glui/social.png",
-    hoverPreview: {
-      device: "mac",
-      src: "/glui/social.png",
-      objectPosition: "center",
-    },
-    technologies: [
-      "Electron",
-      "React",
-      "TypeScript",
-      "Zustand",
-      "Orchestrator V2",
-      "SQLite",
-      "AppKit",
-      "Liquid Glass",
-      "Claude Code",
-      "Codex",
-      "OpenCode",
-      "Local Voice Transcription",
-    ],
-    chapters: [
-      { id: "idea", label: "Why it exists" },
-      { id: "experience", label: "Using it" },
-      { id: "architecture", label: "How it works" },
-      { id: "get-started", label: "Install" },
-    ],
-    timeline: "Aug 2026",
-    contributors: ["Youssef Chouay"],
-    link: "https://github.com/yssf-c/glui",
-    size: "large",
-  },
   {
     id: "ramelli",
     title: "Ramelli",
@@ -198,6 +159,85 @@ export const allProjects: ProjectDetail[] = [
     contributors: ["Youssef Chouay"],
     link: "https://yssf-c.github.io/BikeTrack/",
     size: "small",
+  },
+  {
+    id: "ternpost",
+    title: "Ternpost",
+    category: "Keyboard-First Mail App",
+    description: [
+      "A keyboard-first mail app for Mac that brings Gmail, Microsoft 365, Outlook.com and IMAP accounts into one inbox and gives every action a key.",
+      "Built a Rust core on Tauri 2 that keeps mail, full-text search and a durable action queue in SQLite, syncs in the background, and talks to Gmail, Microsoft Graph and IMAP/SMTP through a single provider trait.",
+      "Archive, trash and send apply on the device first and wait a few seconds before reaching the provider, so Undo can recall them. Mail renders in a sanitized, isolated frame, and sign-ins stay in the system keychain.",
+    ],
+    image: "/ternpost/app/inbox-paper-light.webp",
+    hoverPreview: {
+      device: "mac",
+      src: "/ternpost/app/inbox-paper-light.webp",
+      darkSrc: "/ternpost/app/inbox-paper-dark.webp",
+      objectPosition: "left top",
+    },
+    technologies: [
+      "Rust",
+      "Tauri",
+      "React",
+      "TypeScript",
+      "SQLite",
+      "Tokio",
+      "Gmail API",
+      "Microsoft Graph",
+      "IMAP",
+      "SMTP",
+    ],
+    chapters: [
+      { id: "keyboard", label: "On the keyboard" },
+      { id: "screens", label: "Inside the app" },
+      { id: "engineering", label: "How it’s built" },
+    ],
+    timeline: "Nov 2026",
+    contributors: ["Youssef Chouay"],
+    link: "https://ternpost.vercel.app",
+    size: "large",
+  },
+  {
+    id: "glui",
+    title: "GLUI",
+    category: "macOS Agent Workspace",
+    description: [
+      "Evolved Clui into GLUI, a floating macOS workspace for Claude Code, Codex, and OpenCode, with a new burgundy identity, native Liquid Glass, and a compact interface for conversations, tools, and approvals.",
+      "Integrated the Electron and React pill with T3 Code’s Orchestrator V2 runtime through isolated preload and private IPC, bringing durable conversations, agent handoffs, branching, queued prompts, and restart recovery into the overlay.",
+      "Extended the Clui CC foundation with local voice transcription, attachments, a shared skills directory, and native CLI continuation using existing agent authentication. Current releases support Apple Silicon, with Clui v0.1.17 preserved for Intel Macs.",
+    ],
+    image: "/glui/social.png",
+    hoverPreview: {
+      device: "float",
+      src: "/glui/pill-light.webp",
+      darkSrc: "/glui/pill-dark.webp",
+      aspectRatio: "880 / 686",
+    },
+    technologies: [
+      "Electron",
+      "React",
+      "TypeScript",
+      "Zustand",
+      "Orchestrator V2",
+      "SQLite",
+      "AppKit",
+      "Liquid Glass",
+      "Claude Code",
+      "Codex",
+      "OpenCode",
+      "Local Voice Transcription",
+    ],
+    chapters: [
+      { id: "idea", label: "Why it exists" },
+      { id: "experience", label: "Using it" },
+      { id: "architecture", label: "How it works" },
+      { id: "get-started", label: "Install" },
+    ],
+    timeline: "Aug 2026",
+    contributors: ["Youssef Chouay"],
+    link: "https://github.com/yssf-c/glui",
+    size: "large",
   },
   // {
   //   id: "chess-llm-benchmark",

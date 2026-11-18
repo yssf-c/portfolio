@@ -62,12 +62,3 @@ export function GluiPreview() {
   </div>;
 }
 
-/** A lightweight, noninteractive preview for the portfolio's cursor-following card. */
-export function GluiCardPreview() {
-  return <div className="glui-theme glui-card-preview" role="img" aria-label="GLUI’s burgundy glass workspace with Claude Code, Codex, and OpenCode">
-    <div className="glui-card-brand"><GluiMark /><span>glui</span><small>A little glue for your ideas.</small></div>
-    <div className="glui-card-thread glui-glass"><div><ProviderIcon provider="codex" size={15} /><strong>Codex</strong><span>Done</span></div><p>Three agents.<br />One place to make it happen.</p><span><Check size={12} />Your context, carried forward.</span></div>
-    <div className="glui-card-composer glui-glass"><Plus size={13} /><span>What should we build next?</span><ArrowUp size={16} /></div>
-    <div className="glui-card-agents">{AGENTS.map(item => <span key={item.id}><ProviderIcon provider={item.id} size={12} />{item.name}</span>)}</div>
-  </div>;
-}

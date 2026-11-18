@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 100 100">
+  <title>Ternpost</title>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#0B1E46"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="23" fill="url(#sky)"/>
+  <path fill="#A9C4FF" d="M52 52 L74 16 L62 52Z"/>
+  <path fill="#FFFFFF" d="M26 70 L76 40 L82 42 L58 60Z"/>
+  <path fill="#FFFFFF" d="M31 67.5 L9 74 L27 63.5Z M33.5 69 L17 87 L37.5 67Z"/>
+  <path fill="#FFFFFF" d="M46 58 L24 18 L64 52Z"/>
+  <path fill="#FF6B4A" d="M82 42 L93 40 L81 45Z"/>
+</svg>

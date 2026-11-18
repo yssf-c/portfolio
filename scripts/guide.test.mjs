@@ -61,6 +61,7 @@ test("anchors the guide links to exist on the pages that render them", () => {
     "nlp-phishing-detection": "nlp-phishing-experience",
     "gallery-glow": "gallery-glow-experience",
     biketrack: "biketrack-experience",
+    ternpost: "ternpost-experience",
   };
   for (const project of projects) {
     const source = readFileSync(`components/projects/${pages[project.id]}.tsx`, "utf8");

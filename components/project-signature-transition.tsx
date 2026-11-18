@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 // Preserve the public event API used by project cards and AI answer links.
 const PROJECT_SIGNATURE_EVENT = "portfolio:project-signature-transition";
-type ProjectId = "ramelli" | "glui" | "querno" | "gallery-glow" | "biketrack" | "mugshot" | "nlp-phishing-detection";
+type ProjectId = "ramelli" | "glui" | "querno" | "gallery-glow" | "biketrack" | "ternpost" | "mugshot" | "nlp-phishing-detection";
 
 /** Each project opens on its own color, in its own typeface. */
 export type ProjectSignature = {
@@ -38,6 +38,10 @@ export const PROJECT_SIGNATURES: Record<ProjectId, ProjectSignature> = {
   biketrack: {
     id: "biketrack", title: "BikeTrack", line: "Workouts for Apple Watch",
     bg: "#0b0c0a", fg: "#c7f83a", accent: "#ff635b", font: "var(--font-oswald), sans-serif",
+  },
+  ternpost: {
+    id: "ternpost", title: "Ternpost", line: "Mail at the speed of keys",
+    bg: "#2563eb", fg: "#f7f9fc", accent: "#ff6b4a", font: "var(--font-archivo), sans-serif",
   },
   mugshot: {
     id: "mugshot", title: "Mugshot", line: "A coffee journal for iPhone",
@@ -103,6 +107,11 @@ function SignatureArt({ id }: { id: ProjectId }) {
         <path d="M6 34h12l4-12 7 24 6-16 4 4h19" opacity=".18" />
         <path className="pl-trace" pathLength={1} d="M6 34h12l4-12 7 24 6-16 4 4h19" strokeWidth="2.5" />
         <circle className="pl-beat" cx="56" cy="16" r="3" fill="var(--pl-accent)" stroke="none" />
+      </>}
+      {id === "ternpost" && <>
+        <path d="M6 50c8-1 12-6 18-7" opacity=".35" strokeDasharray="1 4" />
+        <path className="pl-draw" pathLength={1} d="M10 40 54 16 38 50 30 38z M30 38 54 16" />
+        <circle className="pl-pop" cx="57" cy="15" r="2.5" fill="var(--pl-accent)" stroke="none" />
       </>}
       {id === "mugshot" && <>
         <defs><clipPath id={clip}><path d="M16 28h28v16a8 8 0 0 1-8 8H24a8 8 0 0 1-8-8z" /></clipPath></defs>

@@ -202,6 +202,17 @@ const lmMath = localFont({
   preload: false,
 });
 
+// Ternpost identity: Archivo, set condensed and heavy like an airmail label
+// (SIL Open Font License; one variable file for width and weight).
+const archivo = localFont({
+  src: "./fonts/archivo/archivo-wdth-wght.woff2",
+  weight: "100 900",
+  declarations: [{ prop: "font-stretch", value: "62% 125%" }],
+  variable: "--font-archivo",
+  display: "swap",
+  preload: false,
+});
+
 const fontVariables = [
   inter.variable,
   hanken.variable,
@@ -219,6 +230,7 @@ const fontVariables = [
   lmDisplay.variable,
   lmRoman.variable,
   lmMath.variable,
+  archivo.variable,
 ].join(" ");
 
 export const metadata: Metadata = {
