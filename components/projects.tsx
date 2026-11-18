@@ -7,7 +7,6 @@ import { PrismFallback } from "@/components/prism-fallback";
 import Image from "next/image";
 import Link from "next/link";
 import { projects, type ProjectDetail } from "@/lib/project-data";
-import { GluiCardPreview } from "@/components/projects/glui-preview";
 import {
   hasProjectSignatureTransition,
   startProjectSignatureTransition,
@@ -39,7 +38,7 @@ function HoverPreviewShot({
   sizes: string;
 }) {
   const fitClass = preview.fit === "contain" ? "object-contain" : "object-cover";
-  const deviceShotClass = preview.device === "browser" ? "" : "device-shot";
+  const deviceShotClass = preview.device === "browser" || preview.device === "float" ? "" : "device-shot";
   const className = `${deviceShotClass} ${fitClass}`.trim();
   const style = preview.objectPosition
     ? { objectPosition: preview.objectPosition }
@@ -71,13 +70,22 @@ function HoverPreviewShot({
 }
 
 function HoverProjectPreview({ project }: { project: ProjectDetail }) {
-  if (project.id === "glui") return <GluiCardPreview />;
-
   const preview = project.hoverPreview ?? {
     device: "mac",
     src: project.image,
     fit: "cover",
   } satisfies HoverPreview;
+
+  if (preview.device === "float") {
+    return (
+      <div
+        className="relative w-[320px] drop-shadow-[0_28px_44px_rgba(18,22,31,0.24)] md:w-[380px] dark:drop-shadow-[0_30px_52px_rgba(0,0,0,0.6)]"
+        style={{ aspectRatio: preview.aspectRatio }}
+      >
+        <HoverPreviewShot preview={{ ...preview, fit: "contain" }} title={project.title} sizes="380px" />
+      </div>
+    );
+  }
 
   if (preview.device === "tv") {
     return <div className="gallery-card-preview"><div><HoverPreviewShot preview={preview} title={project.title} sizes="420px" /></div></div>;
@@ -190,8 +198,8 @@ export function Projects() {
     : activePreviewDevice === "browser"
       ? { x: 96, y: -92 }
     : { x: 120, y: -118 };
-  const previewBounds = activeProject?.id === "glui"
-    ? { width: 380, height: 335 }
+  const previewBounds = activePreviewDevice === "float"
+    ? { width: 380, height: Math.round(380 / getAspectRatioValue(activeProject?.hoverPreview?.aspectRatio)) }
     : activePreviewDevice === "tv"
     ? { width: 420, height: 252 }
     : activePreviewDevice === "watch"

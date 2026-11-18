@@ -15,6 +15,8 @@
 .pp[data-project="querno"] { --pp-display: var(--font-lm-display), serif; --pp-display-weight: 400; --pp-display-track: -.02em; --pp-display-leading: 1.06; }
 .pp[data-project="gallery-glow"] { --pp-display: var(--font-cormorant-garamond), serif; --pp-display-weight: 500; --pp-display-track: -.025em; --pp-display-leading: .98; }
 .pp[data-project="biketrack"] { --pp-display: var(--font-oswald), sans-serif; --pp-display-track: -.02em; --pp-display-case: uppercase; --pp-display-leading: 1; }
+.pp[data-project="ternpost"] { --pp-display: var(--font-archivo), sans-serif; --pp-display-weight: 780; --pp-display-track: -.015em; --pp-display-leading: .98; }
+.pp[data-project="ternpost"] :is(.pp-title, .pp-h2) { font-stretch: 78%; }
 .pp[data-project="mugshot"] { --pp-display: var(--font-fraunces), serif; --pp-display-track: -.05em; font-family: var(--font-nunito), sans-serif; }
 .pp[data-project="nlp-phishing-detection"] { --pp-display: var(--font-ibm-plex-mono), monospace; --pp-display-track: -.06em; --pp-display-leading: 1.08; }
 
@@ -87,6 +89,7 @@
 .pp-next-label { grid-column: 1 / -1; font-size: 13px; opacity: .6; }
 .pp-next-name { font-family: var(--next-font); font-size: clamp(44px, 6.5vw, 88px); line-height: 1.02; letter-spacing: -.03em; }
 .pp-next[data-next="biketrack"] .pp-next-name { text-transform: uppercase; letter-spacing: -.01em; }
+.pp-next[data-next="ternpost"] .pp-next-name { font-weight: 780; font-stretch: 78%; letter-spacing: -.01em; }
 .pp-next[data-next="nlp-phishing-detection"] .pp-next-name { font-size: clamp(34px, 5vw, 64px); letter-spacing: -.06em; }
 .pp-next-line { display: inline-flex; align-items: center; gap: 10px; padding-bottom: 14px; font-size: 14px; white-space: nowrap; }
 .pp-next-line svg { transition: transform .35s var(--pp-ease); }
@@ -157,6 +160,32 @@ body:has(.project-loader:not([data-leaving])) .pp-rise { animation-play-state: p
 .bike-watch img { width: 100%; height: auto; }
 .bike-watch-crown { position: absolute; top: 78px; right: -10px; z-index: -1; width: 9px; height: 43px; border-radius: 0 5px 5px 0; background: repeating-linear-gradient(#676960 0 2px, #33362e 2px 4px); }
 
+/* ── Ternpost: airmail blue on onionskin paper ────────────── */
+.ternpost-theme { --background: 219 47% 95%; --card: 225 100% 99%; --foreground: 222 73% 16%; --foreground-soft: 222 27% 32%; --foreground-muted: 222 17% 42%; --foreground-subtle: 222 14% 48%; --foreground-faint: 222 18% 66%; --muted-foreground: 222 17% 42%; --border: 220 38% 85%; --gold: 221 83% 53%; --ring: 221 83% 53%; --tern-beak: 11 100% 65%; }
+.dark .ternpost-theme { --background: 223 58% 8%; --card: 223 48% 11%; --foreground: 220 45% 95%; --foreground-soft: 220 22% 79%; --foreground-muted: 220 14% 64%; --foreground-subtle: 220 12% 57%; --foreground-faint: 220 14% 38%; --muted-foreground: 220 14% 64%; --border: 222 32% 20%; --gold: 221 100% 83%; --ring: 221 100% 83%; }
+.tern-window { overflow: hidden; border-radius: 14px; box-shadow: 0 0 0 1px hsl(var(--border)), 0 40px 70px -40px hsl(222 73% 16% / .45); }
+.tern-window img { width: 100%; height: auto; }
+/* The airmail stripe: used once, around the triage demo. */
+.tern-airmail { padding: 7px; border-radius: 18px; background: repeating-linear-gradient(-45deg, hsl(var(--gold)) 0 14px, hsl(var(--card)) 14px 22px, hsl(var(--tern-beak)) 22px 36px, hsl(var(--card)) 36px 44px); }
+.tern-triage { display: grid; grid-template-columns: minmax(0, 1fr) 220px; overflow: hidden; border-radius: 12px; background: hsl(var(--card)); }
+.tern-triage:focus-visible { outline: 2px solid hsl(var(--gold)); outline-offset: 3px; }
+.tern-inbox { min-height: 312px; padding: 10px; border-right: 1px solid hsl(var(--border)); }
+.tern-inbox header { display: flex; justify-content: space-between; padding: 8px 12px 12px; font-size: 13px; color: hsl(var(--foreground-muted)); }
+.tern-inbox header strong { color: hsl(var(--foreground)); font-weight: 600; }
+.tern-inbox li { display: grid; grid-template-columns: 150px minmax(0, 1fr) auto; gap: 16px; padding: 11px 12px; border-radius: 9px; font-size: 14px; color: hsl(var(--foreground-soft)); animation: pp-rise .35s var(--pp-ease); }
+.tern-inbox li[aria-current="true"] { background: hsl(var(--gold) / .1); box-shadow: inset 3px 0 hsl(var(--gold)); color: hsl(var(--foreground)); }
+.tern-inbox li > span:first-child { overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; color: hsl(var(--foreground)); }
+.tern-inbox li > span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tern-inbox li > span:last-child { font-variant-numeric: tabular-nums; font-size: 12px; color: hsl(var(--foreground-muted)); }
+.tern-empty { display: grid; place-items: center; gap: 14px; min-height: 240px; text-align: center; font-size: 15px; color: hsl(var(--foreground-soft)); }
+.tern-empty button { font-size: 13px; font-weight: 600; color: hsl(var(--gold)); }
+.tern-keys { display: flex; flex-direction: column; gap: 6px; padding: 18px; background: hsl(var(--background) / .6); }
+.tern-keys button { display: flex; align-items: center; gap: 12px; padding: 7px 8px; border-radius: 8px; font-size: 13px; text-align: left; color: hsl(var(--foreground-soft)); transition: background-color .2s, color .2s; }
+.tern-keys button:hover:not(:disabled) { background: hsl(var(--foreground) / .05); color: hsl(var(--foreground)); }
+.tern-keys button:disabled { opacity: .4; }
+.tern-keys kbd { display: grid; place-items: center; min-width: 28px; height: 28px; border: 1px solid hsl(var(--border)); border-bottom-width: 2px; border-radius: 6px; background: hsl(var(--card)); font-family: var(--font-dm-mono), monospace; font-size: 13px; color: hsl(var(--foreground)); }
+.tern-keys p { margin-top: auto; padding: 12px 8px 0; font-size: 12px; line-height: 1.55; color: hsl(var(--foreground-muted)); }
+
 /* ── Mugshot: warm paper, evergreen ink ───────────────────── */
 .mug-minimal { --gold: 155 21% 28%; --ring: 155 21% 28%; }
 .dark .mug-minimal { --gold: 146 24% 69%; --ring: 146 24% 69%; }
@@ -211,6 +240,10 @@ body:has(.project-loader:not([data-leaving])) .pp-rise { animation-play-state: p
   .bike-dashboard > div { justify-self: stretch; }
   .phish-scanner-grid { grid-template-columns: 1fr; }
   .phish-mail { border-right: 0; border-bottom: 1px solid hsl(var(--border)); }
+  .tern-triage { grid-template-columns: 1fr; }
+  .tern-inbox { border-right: 0; border-bottom: 1px solid hsl(var(--border)); }
+  .tern-keys { flex-flow: row wrap; }
+  .tern-keys p { flex-basis: 100%; padding-top: 4px; }
 }
 @media (max-width: 640px) {
   .pp-width { width: min(100% - 40px, 1120px); }
@@ -231,6 +264,9 @@ body:has(.project-loader:not([data-leaving])) .pp-rise { animation-play-state: p
   .querno-demo figure { min-height: 0; }
   .querno-demo figure + figure { border-left: 0; border-top: 1px solid hsl(var(--border)); }
   .querno-paper { margin: 20px; padding: 28px 20px; font-size: 19px; }
+  .tern-inbox li { grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; }
+  .tern-inbox li > span:nth-child(2) { grid-row: 2; grid-column: 1 / -1; }
+  .tern-inbox li > span:last-child { grid-row: 1; grid-column: 2; }
 }
 
 /* Shared widgets: the install command and Ramelli's workflow controls. */
@@ -277,6 +313,7 @@ body:has(.project-loader:not([data-leaving])) .pp-rise { animation-play-state: p
 .pl-title { overflow: hidden; padding-bottom: .08em; font-family: var(--pl-font); font-size: clamp(40px, 7vw, 72px); font-weight: 500; line-height: 1.05; letter-spacing: -.035em; }
 .pl-title > span { display: block; animation: pl-up .8s .25s cubic-bezier(.2, .7, .1, 1) both; }
 [data-project-loader="biketrack"] .pl-title { text-transform: uppercase; letter-spacing: -.01em; }
+[data-project-loader="ternpost"] .pl-title { font-weight: 780; font-stretch: 78%; letter-spacing: -.01em; }
 [data-project-loader="nlp-phishing-detection"] .pl-title { font-size: clamp(30px, 5vw, 52px); letter-spacing: -.06em; }
 .pl-line { margin-top: 12px; font-family: var(--font-hanken), sans-serif; font-size: 14px; opacity: .7; animation: pl-in .7s .4s ease both; }
 .pl-action { position: absolute; right: 28px; bottom: 24px; padding: 8px 4px; font-family: var(--font-hanken), sans-serif; font-size: 13px; opacity: .65; transition: opacity .2s; }
@@ -309,7 +346,7 @@ body:has(.project-loader:not([data-leaving])) .pp-rise { animation-play-state: p
 .pl-verdict-tick { animation-delay: .85s; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pp-rise, .pp-reveal, .bike-readout, .phish-verdict-word, .querno-paper, [role="tabpanel"] img, .pl-art, .pl-title > span, .pl-line { animation: none; }
+  .pp-rise, .pp-reveal, .bike-readout, .phish-verdict-word, .querno-paper, .tern-inbox li, [role="tabpanel"] img, .pl-art, .pl-title > span, .pl-line { animation: none; }
   .pl-art * { animation: none !important; stroke-dashoffset: 0; opacity: 1; transform: none; }
   .pp-next a::before, .pp-button, .mug-phone { transition: none; }
 }

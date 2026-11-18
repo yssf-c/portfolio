@@ -7,6 +7,7 @@ import { NLPPhishingExperience } from "@/components/projects/nlp-phishing-experi
 import { MugshotExperience } from "@/components/projects/mugshot-experience";
 import { GalleryGlowExperience } from "@/components/projects/gallery-glow-experience";
 import { BikeTrackExperience } from "@/components/projects/biketrack-experience";
+import { TernpostExperience } from "@/components/projects/ternpost-experience";
 
 /**
  * Per-project bespoke "experience" pages.
@@ -26,4 +27,5 @@ export const projectExperiences: Record<
   mugshot: MugshotExperience,
   "gallery-glow": GalleryGlowExperience,
   biketrack: BikeTrackExperience,
+  ternpost: TernpostExperience,
 };
