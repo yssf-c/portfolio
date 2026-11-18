@@ -41,8 +41,8 @@ const warm = (src: string) => { const img = new window.Image(); img.src = src; r
 function Screenshot({ name, alt, priority = false }: { name: string; alt: string; priority?: boolean }) {
   const sizes = "(max-width: 860px) 90vw, 1120px";
   return <div className="tern-window">
-    <Image src={capture(name, "paper", "light")} alt={alt} width={1920} height={1200} priority={priority} sizes={sizes} className="dark:hidden" />
-    <Image src={capture(name, "paper", "dark")} alt={`${alt}, dark appearance`} width={1920} height={1200} priority={priority} sizes={sizes} className="hidden dark:block" />
+    <Image src={capture(name, "fjord", "light")} alt={alt} width={1920} height={1200} priority={priority} sizes={sizes} className="dark:hidden" />
+    <Image src={capture(name, "fjord", "dark")} alt={`${alt}, dark appearance`} width={1920} height={1200} priority={priority} sizes={sizes} className="hidden dark:block" />
   </div>;
 }
 
@@ -209,7 +209,7 @@ export function TernpostExperience({ project }: { project: SerializableProject }
         <a href={EARLY_ACCESS} target="_blank" rel="noopener noreferrer" className="pp-link">Request early access<ArrowUpRight size={14} /></a>
       </>}
       meta="Mac · Gmail, Microsoft 365, Outlook.com, iCloud and IMAP · Early access"
-      visual={<Screenshot name="inbox" alt="Ternpost’s inbox, with the account sidebar, a list of conversations and the open message" priority />}
+      visual={<Screenshot name="inbox" alt="Ternpost’s inbox, with the account sidebar, a list of conversations and the open message, in the blue Fjord theme" priority />}
     />
 
     <Facts items={[
