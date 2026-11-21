@@ -1199,213 +1199,703 @@
   --mug-coral: 11 62% 64%;
 }
 
-/* Work: the projects as a power diagram. Each cell is a full-size layer cut
-   to its polygon; script sets the polygon and --cx/--cy/--r (the cell's centre
-   and inner radius) and --a (0 idle, 1 chosen). */
-.work-cells {
+/* Work: a reel of posters, one per project, each in its own colour and
+   typeface. On wide screens the stage is pinned and script slides the track
+   as the page scrolls; otherwise the track is swiped. */
+.reel {
   position: relative;
-  height: clamp(34rem, 84svh, 50rem);
-  margin-inline: -1.5rem;
-  opacity: 0;
-  transition: opacity 0.8s ease;
+  margin-top: 4rem;
 }
 
-.work-cells[data-ready="true"] {
-  opacity: 1;
+.reel-stage {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: center;
+  gap: 1.75rem;
 }
 
-@media (max-width: 767px) {
-  .work-cells {
-    height: clamp(54rem, 250vw, 62rem);
+.reel-track {
+  display: flex;
+  gap: 1rem;
+  padding-inline: 1.5rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 1.5rem;
+  scrollbar-width: none;
+}
+
+.reel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.reel-card {
+  position: relative;
+  flex: none;
+  width: 84vw;
+  height: min(34rem, 74svh);
+  overflow: hidden;
+  border-radius: 1.25rem;
+  background: var(--card-bg);
+  color: var(--card-fg);
+  container-type: inline-size;
+  scroll-snap-align: start;
+  outline: none;
+  isolation: isolate;
+}
+
+.reel-card:focus-visible {
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--gold));
+}
+
+/* The darkest posters need an edge against a dark page. */
+.reel-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--card-fg) 14%, transparent);
+  pointer-events: none;
+}
+
+.reel-card-top {
+  position: absolute;
+  inset: 1.5rem 1.5rem auto;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  opacity: 0.78;
+}
+
+.reel-card-device {
+  --scale: 1;
+  --drift: 0px;
+  position: absolute;
+  right: 5.5%;
+  top: 42%;
+  z-index: 1;
+  width: max-content;
+  transform: translate3d(var(--drift), -50%, 0) scale(var(--scale));
+  transform-origin: right center;
+  transition: scale 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.reel-card[data-narrow="true"] .reel-card-device {
+  right: auto;
+  left: 50%;
+  top: 34%;
+  transform: translate3d(-50%, -50%, 0) scale(var(--scale));
+  transform-origin: center;
+}
+
+.reel-card-name {
+  position: absolute;
+  inset: auto auto 1.5rem 1.5rem;
+  z-index: 2;
+  max-width: 62%;
+  font-family: var(--card-font);
+}
+
+.reel-card[data-narrow="true"] .reel-card-name {
+  max-width: calc(100% - 3rem);
+  bottom: 4.5rem;
+}
+
+.reel-card-title {
+  font-size: min(13.5cqw, calc(100cqw / var(--chars)));
+  font-weight: 500;
+  line-height: 0.9;
+  letter-spacing: -0.035em;
+}
+
+.reel-card[data-narrow="true"] .reel-card-title {
+  font-size: min(19cqw, calc(150cqw / var(--chars)));
+}
+
+.reel-card-line {
+  margin-top: 0.9em;
+  font-size: clamp(1rem, 2.1cqw, 1.5rem);
+  line-height: 1.2;
+  opacity: 0.85;
+}
+
+.reel-card-open {
+  position: absolute;
+  inset: auto 1.5rem 1.5rem auto;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.reel-card-arrow {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--card-fg) 45%, transparent);
+  transition: background-color 0.4s ease, color 0.4s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reel-card-arrow svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+@media (hover: hover) {
+  .reel-card:hover .reel-card-device {
+    scale: 1.035;
+  }
+
+  .reel-card:hover .reel-card-arrow {
+    background: var(--card-fg);
+    color: var(--card-bg);
+    transform: rotate(45deg);
+  }
+}
+
+.reel-meter {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 0.8125rem;
+  color: hsl(var(--foreground-muted));
+}
+
+.reel-meter-line {
+  position: relative;
+  flex: 1;
+  height: 1px;
+  background: hsl(var(--border));
+}
+
+.reel-meter-line > span {
+  position: absolute;
+  inset: 0;
+  background: hsl(var(--foreground));
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.reel-meter-hint {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .reel-track {
+    gap: 1.5rem;
+    padding-inline: 3rem;
+    scroll-padding-inline: 3rem;
+  }
+
+  .reel-card {
+    width: min(66vw, 68rem);
+    height: min(68svh, 44rem);
+    border-radius: 1.5rem;
+  }
+
+  .reel-card-top {
+    inset: 2rem 2.25rem auto;
+    font-size: 0.875rem;
+  }
+
+  .reel-card-name {
+    inset: auto auto 2.25rem 2.25rem;
+  }
+
+  .reel-card-open {
+    inset: auto 2.25rem 2.25rem auto;
+  }
+}
+
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .reel-stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    padding-block: 4.5rem 5.5rem;
+    overflow: hidden;
+  }
+
+  .reel-track {
+    width: max-content;
+    overflow: visible;
+    scroll-snap-type: none;
+    will-change: transform;
+  }
+
+  .reel-meter-hint {
+    display: inline;
+  }
+}
+
+/* About: slides up over the hero as a sheet. The name on the left stays put
+   while the copy scrolls past, and is inked in gold from right to left, the
+   way it is written; --ink (0 to 1) comes from the scroll position. */
+.about {
+  --ink: 1;
+  z-index: 1;
+  box-shadow: 0 -1px 0 hsl(var(--border));
+  overflow: clip;
+  border-radius: 1.75rem 1.75rem 0 0;
+  background: linear-gradient(to bottom, hsl(var(--background)), hsl(var(--wash)) 55%, hsl(var(--background)));
+}
+
+.about-name-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 5rem;
+}
+
+.about-name {
+  position: relative;
+  font-family: var(--font-aref-ruqaa), serif;
+  font-size: clamp(7.5rem, 36vw, 15rem);
+  font-weight: 400;
+  line-height: 1.22;
+  color: hsl(var(--gold));
+  direction: rtl;
+  user-select: none;
+}
+
+.about-name > span {
+  display: block;
+  text-align: center;
+}
+
+.about-name span span {
+  display: block;
+  padding-block: 0.06em;
+}
+
+/* One opaque layer faded as a whole, so the joins between letters do not show. */
+.about-name-ghost {
+  opacity: 0.13;
+}
+
+.about-name-ink {
+  position: absolute;
+  inset: 0;
+}
+
+.about-name-ink span:first-child {
+  clip-path: inset(-30% 0 -30% calc((1 - clamp(0, var(--ink) * 2, 1)) * 100%));
+}
+
+.about-name-ink span:last-child {
+  clip-path: inset(-30% 0 -30% calc((1 - clamp(0, var(--ink) * 2 - 1, 1)) * 100%));
+}
+
+.about-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4.5rem;
+  padding-block: 5rem 7rem;
+}
+
+.about-statement {
+  font-size: clamp(2rem, 4.1vw, 4.25rem);
+  font-weight: 400;
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  color: hsl(var(--foreground));
+  text-wrap: balance;
+}
+
+.about-word {
+  display: inline-block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+  vertical-align: bottom;
+  white-space: pre;
+}
+
+.about-word > span {
+  display: inline-block;
+}
+
+.about-facts > div {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 1.5rem;
+  padding-block: 1.1rem;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.about-facts > div:last-child {
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.about-facts dt {
+  font-size: 0.875rem;
+  color: hsl(var(--foreground-subtle));
+}
+
+.about-facts dd {
+  font-size: 1.0625rem;
+  line-height: 1.45;
+  color: hsl(var(--foreground));
+}
+
+@media (min-width: 1024px) {
+  .about-name-stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    padding-top: 0;
+  }
+
+  .about-name {
+    font-size: clamp(11rem, 19vw, 21rem);
+  }
+
+  .about-copy {
+    gap: 16vh;
+    padding-block: 26vh 30vh;
+  }
+}
+
+/* Footer: the one place the page turns gold. */
+.site-footer {
+  --footer-ink: #0c0b08;
+  position: relative;
+  background: hsl(var(--gold));
+  color: var(--footer-ink);
+}
+
+.site-footer-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 3.5rem;
+  min-height: 100svh;
+  padding: 6rem 1.5rem 1.75rem;
+  background: hsl(var(--gold));
+}
+
+.site-footer-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  font-size: 1.0625rem;
+  line-height: 1.4;
+}
+
+.site-footer-place {
+  display: none;
+  text-align: right;
+}
+
+.site-footer-middle {
+  position: relative;
+}
+
+.site-footer-hello {
+  display: flex;
+  align-items: center;
+  font-size: clamp(4.25rem, 21.5vw, 24rem);
+  font-weight: 500;
+  line-height: 0.8;
+  letter-spacing: -0.065em;
+}
+
+.site-footer-hello-arabic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-inline: 0.08em 0.12em;
+  font-size: 0.19em;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.site-footer-hello-arabic .font-arabic {
+  font-size: 2.3em;
+  line-height: 1.3;
+}
+
+.site-footer-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 8.5rem;
+  height: 8.5rem;
+  margin-top: 2rem;
+  border-radius: 9999px;
+  background: var(--footer-ink);
+  color: hsl(var(--gold));
+  font-size: 1rem;
+  font-weight: 500;
+  outline: none;
+}
+
+.site-footer-button svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.site-footer-button:focus-visible,
+.site-footer-email:focus-visible,
+.site-footer a:focus-visible {
+  outline: 2px solid var(--footer-ink);
+  outline-offset: 4px;
+}
+
+.site-footer-bottom {
+  display: grid;
+  gap: 1.75rem;
+}
+
+.site-footer-email {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  width: 100%;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--footer-ink);
+  font-size: clamp(1.25rem, 3.2vw, 2.75rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  text-align: left;
+}
+
+.site-footer-copy {
+  font-size: 0.875rem;
+  letter-spacing: 0;
+}
+
+.site-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.site-footer-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--footer-ink);
+  border-radius: 9999px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.site-footer-links svg,
+.site-footer-legal svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.site-footer-links a:hover {
+  background: var(--footer-ink);
+  color: hsl(var(--gold));
+}
+
+.site-footer-legal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+  font-size: 0.875rem;
+}
+
+.site-footer-legal a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+@media (min-width: 768px) {
+  .site-footer-panel {
+    padding: 7rem 3rem 2rem;
+  }
+
+  .site-footer-place {
+    display: block;
+  }
+
+  .site-footer-button {
+    position: absolute;
+    right: 3%;
+    top: 50%;
+    width: clamp(9rem, 13vw, 13rem);
+    height: clamp(9rem, 13vw, 13rem);
+    margin-top: calc(clamp(9rem, 13vw, 13rem) / -2);
+    font-size: 1.125rem;
+  }
+
+  .site-footer-bottom {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+
+  .site-footer-email {
+    grid-column: 1 / -1;
+  }
+
+  .site-footer-legal {
+    justify-content: flex-end;
+  }
+}
+
+/* The reveal: the footer's box is a window onto a panel fixed to the viewport. */
+@media (min-width: 768px) and (min-height: 640px) {
+  .site-footer {
+    height: 100svh;
+    clip-path: inset(0);
+  }
+
+  .site-footer-panel {
+    position: fixed;
+    inset: auto 0 0;
+    height: 100svh;
+  }
+}
+
+/* The home page above the footer: a sheet with a rounded foot that lifts off the footer. */
+.page-sheet {
+  position: relative;
+  z-index: 1;
+  background: hsl(var(--background));
+}
+
+@media (min-width: 768px) and (min-height: 640px) {
+  .page-sheet {
+    overflow: clip;
+    border-radius: 0 0 1.75rem 1.75rem;
+  }
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+/* The opening curtain (components/preloader.tsx). Hidden unless the inline
+   script marks this visit as the first of the session. */
+@property --preloader-count {
+  syntax: "<integer>";
+  initial-value: 0;
+  inherits: false;
+}
+
+.preloader {
+  display: none;
+}
+
+html[data-intro="play"] .preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  background: hsl(var(--background));
+  color: hsl(var(--gold));
+  animation: preloader-lift 0.95s cubic-bezier(0.76, 0, 0.24, 1) 1.5s forwards;
+}
+
+.preloader-mark,
+.preloader-count {
+  position: absolute;
+  bottom: 2rem;
+  color: hsl(var(--foreground));
+}
+
+.preloader-mark {
+  left: 1.5rem;
+  font-size: 0.9375rem;
+  letter-spacing: 0.12em;
+}
+
+.preloader-count {
+  right: 1.5rem;
+  bottom: 1rem;
+  font-size: clamp(4rem, 13vw, 11rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.06em;
+  font-variant-numeric: tabular-nums;
+  counter-reset: count var(--preloader-count);
+  animation: preloader-count 1.35s cubic-bezier(0.65, 0, 0.35, 1) 0.1s forwards;
+}
+
+.preloader-count::after {
+  content: counter(count);
+}
+
+.preloader-name {
+  position: relative;
+  font-family: var(--font-aref-ruqaa), serif;
+  font-size: clamp(3.5rem, 13vw, 11rem);
+  line-height: 1.5;
+  direction: rtl;
+  white-space: nowrap;
+}
+
+.preloader-name span:first-child {
+  opacity: 0.13;
+}
+
+.preloader-name span:last-child {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(-20% 0 -20% 100%);
+  animation: preloader-ink 1.25s cubic-bezier(0.65, 0, 0.35, 1) 0.15s forwards;
+}
+
+@keyframes preloader-ink {
+  to {
+    clip-path: inset(-20% 0 -20% 0%);
+  }
+}
+
+@keyframes preloader-count {
+  to {
+    --preloader-count: 100;
+  }
+}
+
+@keyframes preloader-lift {
+  to {
+    transform: translateY(-101%);
+    border-radius: 0 0 50% 50% / 0 0 14% 14%;
+    visibility: hidden;
   }
 }
 
 @media (min-width: 768px) {
-  .work-cells {
-    margin-inline: 0;
+  .preloader-mark {
+    left: 3rem;
+  }
+
+  .preloader-count {
+    right: 3rem;
   }
 }
 
-.work-cell {
-  --a: 0;
-  --cx: 50%;
-  --cy: 50%;
-  --r: 10rem;
-  position: absolute;
-  inset: 0;
-  display: block;
-  overflow: hidden;
-  outline: none;
-  background:
-    radial-gradient(
-      circle at var(--cx) var(--cy),
-      hsl(var(--foreground) / calc(0.075 + 0.045 * var(--a))),
-      hsl(var(--foreground) / 0.012) calc(var(--r) * 2.3)
-    ),
-    hsl(var(--background));
-}
-
-.work-cell-media {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: max-content;
-  pointer-events: none;
-  will-change: transform;
-}
-
-.work-cell-label {
-  position: absolute;
-  left: 0;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  will-change: transform;
-}
-
-.work-cell-index {
-  font-family: var(--font-roboto-mono), monospace;
-  font-size: 0.625rem;
-  letter-spacing: 0.2em;
-  color: hsl(var(--gold));
-}
-
-.work-cell-title {
-  margin-top: 0.3rem;
-  font-family: var(--font-oswald), sans-serif;
-  font-size: calc(1rem + 1.15rem * var(--a));
-  font-weight: 500;
-  line-height: 1.1;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: hsl(var(--foreground));
-}
-
-.work-cell-category {
-  margin-top: 0.4rem;
-  font-family: var(--font-roboto-mono), monospace;
-  font-size: 0.625rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: hsl(var(--foreground-muted));
-}
-
-.work-cell-label[data-compact="true"] .work-cell-category {
-  display: none;
-}
-
-.work-cell-more {
-  margin-top: 0.85rem;
-  opacity: var(--a);
-}
-
-.work-cell-description {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: hsl(var(--foreground-soft));
-}
-
-.work-cell-stack {
-  margin-top: 0.6rem;
-  font-family: var(--font-roboto-mono), monospace;
-  font-size: 0.625rem;
-  letter-spacing: 0.08em;
-  color: hsl(var(--foreground-subtle));
-}
-
-@media (max-width: 767px) {
-  .work-cell-description {
-    -webkit-line-clamp: 2;
-  }
-
-  .work-cell-stack {
-    display: none;
-  }
-}
-
-.work-cell-open {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-top: 0.8rem;
-  font-family: var(--font-roboto-mono), monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: hsl(var(--gold));
-}
-
-.work-cells-lines {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-}
-
-.work-cells-lines polygon {
-  fill: none;
-  stroke: hsl(var(--border));
-  stroke-width: 1;
-}
-
-.work-cells-lines polygon[data-active-outline] {
-  stroke: hsl(var(--gold));
-  stroke-width: 1.5;
-}
-
-/* Contact: each way to reach me is a vertex of the mesh behind the footer.
-   Script marks the one with the shortest path from the pointer. */
-.contact-terminal {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 1rem;
-  color: hsl(var(--foreground));
-  transition: color 0.3s ease;
-}
-
-.contact-dot {
-  flex: none;
-  width: 0.5rem;
-  height: 0.5rem;
-  margin-top: 0.2rem;
-  border-radius: 9999px;
-  background: hsl(var(--gold));
-}
-
-.contact-kind {
-  display: block;
-  font-family: var(--font-roboto-mono), monospace;
-  font-size: 0.625rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: hsl(var(--foreground-subtle));
-}
-
-.contact-label {
-  display: block;
-  margin-top: 0.5rem;
-  font-size: 1.6rem;
-  font-weight: 300;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-}
-
-.contact-terminal-email .contact-label {
-  font-size: clamp(1.45rem, 4.4vw, 3.6rem);
-  overflow-wrap: anywhere;
-}
-
-.contact-terminal[data-nearest="true"],
-.contact-terminal:hover,
-.contact-terminal:focus-visible {
-  color: hsl(var(--gold));
-  outline: none;
+/* The hero recedes as the About sheet covers it; --away (0 to 1) follows the scroll. */
+.hero-stage {
+  --away: 0;
+  transform: scale(calc(1 - var(--away) * 0.07));
+  transform-origin: 50% 42%;
+  opacity: calc(1 - var(--away) * 0.6);
 }

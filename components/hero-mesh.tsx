@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { cavity, insert, triangulate, type Points, type Triangle } from "@/lib/delaunay";
 import { mulberry32 } from "@/lib/rng";
+import { INTRO_MS } from "@/components/preloader";
 
 /**
  * The hero monogram, drawn as a Delaunay triangulation: points are sampled
@@ -58,6 +59,8 @@ export function HeroMesh({ left, right, onLayout, onStats }: Props) {
     let pinned = 0;
     let retries = 0;
     let started = 0;
+    // On a first visit the opening curtain is still down when this mounts; start as it lifts.
+    const introDelay = document.documentElement.dataset.intro === "play" ? INTRO_MS : 0;
     let pointer: { x: number; y: number } | null = null;
     let colors = { fg: "0 0% 100%", bg: "0 0% 0%", gold: "42 45% 75%" };
 
@@ -237,7 +240,7 @@ export function HeroMesh({ left, right, onLayout, onStats }: Props) {
     const draw = (now: number) => {
       frame = 0;
       if (disposed || !width) return;
-      const elapsed = now - started - SWEEP_DELAY;
+      const elapsed = now - started - SWEEP_DELAY - introDelay;
       const sweeping = elapsed < SWEEP_MS + FADE_MS;
       const sweepX = (elapsed / SWEEP_MS) * (width + 80) - 40;
       const { x, y } = points;
