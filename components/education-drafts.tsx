@@ -12,16 +12,16 @@ const msc = degrees.find((degree) => degree.id === "msc")!;
 const basc = degrees.find((degree) => degree.id === "basc")!;
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-/** A card that leans towards the pointer and catches a highlight where it is. */
-function TiltCard({ className, children }: { className: string; children: ReactNode }) {
+/** A sheet that lies slightly askew, and straightens and leans towards the pointer when it is over it. */
+function TiltCard({ className, rest, children }: { className: string; rest: number; children: ReactNode }) {
   const ref = useRef<HTMLElement>(null);
   const move = (event: React.PointerEvent) => {
     const card = ref.current;
     if (!card || event.pointerType !== "mouse") return;
     const rect = card.getBoundingClientRect();
     const x = (event.clientX - rect.left) / rect.width, y = (event.clientY - rect.top) / rect.height;
-    card.style.setProperty("--rx", `${((0.5 - y) * 7).toFixed(2)}deg`);
-    card.style.setProperty("--ry", `${((x - 0.5) * 9).toFixed(2)}deg`);
+    card.style.setProperty("--rx", `${((0.5 - y) * 6).toFixed(2)}deg`);
+    card.style.setProperty("--ry", `${((x - 0.5) * 8).toFixed(2)}deg`);
     card.style.setProperty("--gx", `${(x * 100).toFixed(1)}%`);
     card.style.setProperty("--gy", `${(y * 100).toFixed(1)}%`);
     card.dataset.lit = "";
@@ -34,87 +34,169 @@ function TiltCard({ className, children }: { className: string; children: ReactN
     delete card.dataset.lit;
   };
   return (
-    <article ref={ref} className={`edu-card ${className}`} onPointerMove={move} onPointerLeave={leave}>
-      <span className="edu-card-glare" aria-hidden="true" />
+    <article
+      ref={ref}
+      className={className}
+      style={{ "--rest": `${rest}deg` } as CSSProperties}
+      onPointerMove={move}
+      onPointerLeave={leave}
+    >
       {children}
+      <span className="diploma-sheen" aria-hidden="true" />
     </article>
   );
 }
 
-/** The two degrees as a pair of diplomas. */
+// The pinked edge of a seal: 36 points around a 140-unit square.
+const SEAL_EDGE = Array.from({ length: 72 }, (_, i) => {
+  const radius = i % 2 ? 57 : 62.5;
+  const angle = (i / 72) * Math.PI * 2;
+  return `${(70 + radius * Math.cos(angle)).toFixed(2)},${(70 + radius * Math.sin(angle)).toFixed(2)}`;
+}).join(" ");
+
+/**
+ * The seal on a diploma. A conferred degree gets it in gold foil with its
+ * ribbon; one still under way gets the outline, and a gold rule around it
+ * that is as complete as the degree is.
+ */
+function Seal({ id, legend, centre, progress }: { id: string; legend: string; centre: string; progress?: number }) {
+  const pending = progress !== undefined;
+  return (
+    <div className="diploma-seal" data-pending={pending ? "" : undefined} aria-hidden="true">
+      {!pending && (
+        <>
+          <span className="diploma-ribbon" />
+          <span className="diploma-ribbon" />
+        </>
+      )}
+      <svg viewBox="0 0 140 140">
+        <defs>
+          <linearGradient id={`${id}-foil`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#f3dc9b" />
+            <stop offset="0.32" stopColor="#c79a3a" />
+            <stop offset="0.55" stopColor="#f7e7b4" />
+            <stop offset="0.78" stopColor="#b3842b" />
+            <stop offset="1" stopColor="#e6c873" />
+          </linearGradient>
+          <path id={`${id}-arc`} d="M70,70 m-41,0 a41,41 0 1,1 82,0 a41,41 0 1,1 -82,0" />
+        </defs>
+        <polygon className="diploma-seal-edge" points={SEAL_EDGE} fill={pending ? undefined : `url(#${id}-foil)`} />
+        <circle className="diploma-seal-ring" cx="70" cy="70" r="50" />
+        {pending && (
+          <circle
+            className="diploma-seal-progress"
+            cx="70"
+            cy="70"
+            r="50"
+            pathLength="100"
+            strokeDasharray={`${Math.round(progress * 100)} 100`}
+          />
+        )}
+        <circle className="diploma-seal-ring" cx="70" cy="70" r="31" />
+        <text className="diploma-seal-legend">
+          <textPath href={`#${id}-arc`} textLength="252" lengthAdjust="spacing">
+            {legend}
+          </textPath>
+        </text>
+        <text className="diploma-seal-centre" x="70" y="75.5" textAnchor="middle">
+          {centre}
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+function Corners() {
+  return (
+    <>
+      <span className="diploma-corner" />
+      <span className="diploma-corner" />
+      <span className="diploma-corner" />
+      <span className="diploma-corner" />
+    </>
+  );
+}
+
+/** The two degrees as diplomas on a desk: paper, a ruled frame, a hand-written name and a seal. */
 export function EducationCards({ progress }: { progress: number }) {
   const percent = Math.round(progress * 100);
+  const [mscFrom, mscTo] = msc.period.split(" — ");
+  const [bascFrom, bascTo] = basc.period.split(" — ");
   return (
     <motion.div
-      className="edu-cards"
+      className="diplomas"
       initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.9, ease: EASE }}
     >
-      <TiltCard className="edu-card-ink">
-        <header className="edu-card-top">
-          <span className="edu-card-chip">
-            <span className="edu-card-dot" />
-            In progress · {percent}%
-          </span>
-          <span>{msc.period}</span>
-        </header>
-        <p className="edu-card-short" aria-hidden="true">
-          {msc.short}
-        </p>
-        <h3 className="edu-card-title">
-          {msc.title[0]} <em>{msc.title[1]}</em>
-        </h3>
-        <p className="edu-card-thesis">
-          <span>Thesis</span>
-          {msc.thesis}
-        </p>
-        <dl className="edu-card-facts">
-          <div>
-            <dt>Supervisor</dt>
-            <dd>{msc.supervisor}</dd>
-          </div>
-          <div>
-            <dt>Funding</dt>
-            <dd>
-              {msc.funding?.amount} <small>{msc.funding?.label}</small>
-            </dd>
-          </div>
-          <div>
-            <dt>Institution</dt>
-            <dd>{msc.institution}</dd>
-          </div>
-        </dl>
-        <div className="edu-card-progress" aria-hidden="true">
-          <span style={{ "--progress": progress } as CSSProperties} />
+      <TiltCard className="diploma" rest={-1.6}>
+        <div className="diploma-frame">
+          <Corners />
+          <p className="diploma-school">{msc.institution}</p>
+          <p className="diploma-line">This certifies that</p>
+          <p className="diploma-name">Youssef Chouay</p>
+          <p className="diploma-line">is completing the degree of</p>
+          <h3 className="diploma-degree">
+            {msc.title[0]} <em>{msc.title[1]}</em>
+          </h3>
+          <p className="diploma-note">with the thesis “{msc.thesis}”</p>
+          <footer className="diploma-foot">
+            <dl>
+              <div>
+                <dt>Supervisor</dt>
+                <dd>{msc.supervisor}</dd>
+              </div>
+              <div>
+                <dt>Scholarships</dt>
+                <dd>{msc.funding?.amount}</dd>
+              </div>
+            </dl>
+            <Seal id="seal-msc" legend="IN PROGRESS · EXPECTED DECEMBER 2026 ·" centre={`${percent}%`} progress={progress} />
+            <dl>
+              <div>
+                <dt>Enrolled</dt>
+                <dd>{mscFrom}</dd>
+              </div>
+              <div>
+                <dt>Expected</dt>
+                <dd>{mscTo}</dd>
+              </div>
+            </dl>
+          </footer>
         </div>
       </TiltCard>
 
-      <TiltCard className="edu-card-paper">
-        <header className="edu-card-top">
-          <span className="edu-card-chip">Conferred</span>
-          <span>{basc.period}</span>
-        </header>
-        <p className="edu-card-short" aria-hidden="true">
-          {basc.short}
-        </p>
-        <h3 className="edu-card-title">
-          {basc.title[0]} {basc.title[1]}, <em>{basc.field}</em>
-        </h3>
-        <dl className="edu-card-facts">
-          <div>
-            <dt>GPA</dt>
-            <dd>{basc.gpa}</dd>
-          </div>
-          <div>
-            <dt>Institution</dt>
-            <dd>{basc.institution}</dd>
-          </div>
-        </dl>
-        <ul className="edu-card-courses">
-          {basc.coursework?.map((course) => <li key={course.name}>{course.name}</li>)}
-        </ul>
+      <TiltCard className="diploma" rest={2.2}>
+        <div className="diploma-frame">
+          <Corners />
+          <p className="diploma-school">{basc.institution}</p>
+          <p className="diploma-line">This certifies that</p>
+          <p className="diploma-name">Youssef Chouay</p>
+          <p className="diploma-line">has been awarded the degree of</p>
+          <h3 className="diploma-degree">
+            {basc.title[0]} <em>{basc.title[1]}</em>
+          </h3>
+          <p className="diploma-note">
+            in {basc.field}, with a grade point average of {basc.gpa}
+          </p>
+          <p className="diploma-courses">{basc.coursework?.map((course) => course.name).join("  ·  ")}</p>
+          <footer className="diploma-foot">
+            <dl>
+              <div>
+                <dt>Enrolled</dt>
+                <dd>{bascFrom}</dd>
+              </div>
+            </dl>
+            <Seal id="seal-basc" legend="CONFERRED · DECEMBER 2024 · SOFTWARE ENGINEERING ·" centre={basc.short} />
+            <dl>
+              <div>
+                <dt>Conferred</dt>
+                <dd>{bascTo}</dd>
+              </div>
+            </dl>
+          </footer>
+        </div>
       </TiltCard>
     </motion.div>
   );

@@ -120,6 +120,20 @@ export function CurrentListen() {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [hoveredPhoto, setHoveredPhoto] = useState<number | null>(null);
+  // The print last pointed at stays on top while it settles back, instead of dropping behind its neighbours at once.
+  const [lastPhoto, setLastPhoto] = useState<number | null>(null);
+  const leaveTimer = useRef(0);
+  const enterPhoto = (index: number) => {
+    window.clearTimeout(leaveTimer.current);
+    setHoveredPhoto(index);
+    setLastPhoto(index);
+  };
+  // Held for a moment, so crossing from one print to the next does not flash the whole pile bright.
+  const leavePhoto = () => {
+    window.clearTimeout(leaveTimer.current);
+    leaveTimer.current = window.setTimeout(() => setHoveredPhoto(null), 90);
+  };
+  useEffect(() => () => window.clearTimeout(leaveTimer.current), []);
 
   // Deezer track ID for "SOMETIMES" by Riles (from The 25th Hour)
   const deezerTrackId = "3579493971";
@@ -304,6 +318,10 @@ export function CurrentListen() {
             {/* Photo scatter container */}
             <div className="photo-album-container relative w-[320px] h-[460px] [--photo-scale:0.62] md:w-[480px] md:h-[520px] md:[--photo-scale:0.78] lg:w-[520px] lg:h-[540px] lg:[--photo-scale:0.85] xl:w-[600px] xl:h-[580px] xl:[--photo-scale:0.95]">
               {travelPhotos.map((photo, i) => (
+                // The outer box only places the print and plays its entrance, so the area that
+                // counts as "over this print" never moves; the inner one answers the pointer.
+                // (One element doing both made a print slip out from under the pointer as it
+                // straightened, and held each print's hover back by its entrance delay.)
                 <motion.div
                   key={i}
                   initial={{
@@ -314,39 +332,41 @@ export function CurrentListen() {
                   }}
                   animate={
                     isInView
-                      ? {
-                          opacity: 1,
-                          scale: hoveredPhoto === i ? 1.08 : 1,
-                          rotate: hoveredPhoto === i ? 0 : photo.rotate,
-                          y: 0,
-                        }
+                      ? { opacity: 1, scale: 1, rotate: photo.rotate, y: 0 }
                       : { opacity: 0, scale: 0.7, rotate: photo.rotate * 2, y: 40 }
                   }
                   transition={{
                     duration: 0.7,
                     delay: 0.15 + i * 0.1,
                     ease: [0.16, 1, 0.3, 1],
-                    scale: { duration: 0.4 },
-                    rotate: { duration: 0.4 },
                   }}
-                  onMouseEnter={() => setHoveredPhoto(i)}
-                  onMouseLeave={() => setHoveredPhoto(null)}
+                  onMouseEnter={() => enterPhoto(i)}
+                  onMouseLeave={leavePhoto}
                   className="absolute cursor-pointer"
                   style={{
                     left: photo.x,
                     top: photo.y,
-                    zIndex: hoveredPhoto === i ? 20 : photo.z,
+                    zIndex: hoveredPhoto === i ? 30 : lastPhoto === i ? 20 : photo.z,
                     filter:
                       hoveredPhoto !== null && hoveredPhoto !== i
                         ? "brightness(0.6)"
                         : "brightness(1)",
-                    transition: "filter 0.4s ease, box-shadow 0.4s ease",
+                    transition: "filter 0.4s ease",
                   }}
                 >
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      scale: hoveredPhoto === i ? 1.08 : 1,
+                      rotate: hoveredPhoto === i ? -photo.rotate : 0,
+                    }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  >
                   {/* Polaroid-style photo card */}
                   <div
                     className="photo-card relative bg-[#f5f0e8] p-[6px] pb-[24px] md:p-[8px] md:pb-[28px] shadow-xl"
                     style={{
+                      transition: "box-shadow 0.4s ease",
                       boxShadow:
                         hoveredPhoto === i
                           ? "0 20px 50px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)"
@@ -415,6 +435,7 @@ export function CurrentListen() {
                       )}
                     </AnimatePresence>
                   </div>
+                  </motion.div>
                 </motion.div>
               ))}
 

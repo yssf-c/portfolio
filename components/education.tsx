@@ -152,10 +152,10 @@ function BascDetail() {
 // ---------------------------------------------------------------------------
 
 const EDUCATION_DRAFTS = [
+  { id: "cards", label: "Diplomas" },
   { id: "bento", label: "Bento" },
   { id: "spotlight", label: "Thesis" },
   { id: "years", label: "Years" },
-  { id: "cards", label: "Diplomas" },
   { id: "rows", label: "Index" },
   { id: "timeline", label: "Timeline" },
 ] as const;
@@ -167,7 +167,7 @@ export function Education() {
   const now = useNow([2026, 9]);
   const nowPct = toPct(now);
   const mscProgress = progressOf(msc, now);
-  const [draft, setDraft] = useDraft("education", EDUCATION_DRAFTS, "bento");
+  const [draft, setDraft] = useDraft("education", EDUCATION_DRAFTS, "cards");
 
   // A citation from the site guide can point at either degree.
   useEffect(() => {
