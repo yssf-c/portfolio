@@ -1,26 +1,42 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion, useInView, useReducedMotion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { ArrowUp, ArrowUpRight, Check, Copy } from "lucide-react";
-import { LocalTime } from "@/components/local-time";
+import { ContactMesh } from "@/components/contact-mesh";
 
 const EMAIL = "ychou031@uottawa.ca";
 const EASE = [0.55, 0.45, 0.16, 1] as const;
 
+// Each is a vertex of the mesh behind the section; `place` scatters them across it on wide screens.
 const links = [
-  { label: "GitHub", href: "https://github.com/yssf-c" },
-  { label: "LinkedIn", href: "https://linkedin.com/in/youssef-chouay" },
-  { label: "CV", href: "/data/resume.pdf" },
+  {
+    label: "GitHub",
+    kind: "Code",
+    name: "my GitHub",
+    href: "https://github.com/yssf-c",
+    place: "md:col-start-9 md:row-start-1 md:self-start",
+  },
+  {
+    label: "LinkedIn",
+    kind: "Work",
+    name: "my LinkedIn",
+    href: "https://linkedin.com/in/youssef-chouay",
+    place: "md:col-start-7 md:row-start-3 md:self-end",
+  },
+  {
+    label: "CV",
+    kind: "On paper",
+    name: "my CV",
+    href: "/data/resume.pdf",
+    place: "md:col-start-11 md:row-start-2 md:self-center",
+  },
 ];
 
 export function Footer() {
   const footerRef = useRef<HTMLElement>(null);
   const isInView = useInView(footerRef, { once: true, margin: "-100px" });
-  const reduceMotion = useReducedMotion();
   const [copied, setCopied] = useState(false);
-
-  const currentYear = new Date().getFullYear();
 
   const copyEmail = async () => {
     try {
@@ -33,19 +49,11 @@ export function Footer() {
   };
 
   return (
-    <footer ref={footerRef} className="relative flex min-h-[92svh] flex-col justify-end overflow-hidden bg-background">
-      {/* The name, written large behind everything */}
-      <motion.div
-        className="pointer-events-none absolute inset-x-0 bottom-[14%] flex select-none justify-end pr-[2vw]"
-        initial={{ opacity: 0, y: reduceMotion ? 0 : 60 }}
-        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: reduceMotion ? 0 : 60 }}
-        transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
-        aria-hidden="true"
-      >
-        <span className="footer-signature font-arabic">يوسف</span>
-      </motion.div>
+    <footer ref={footerRef} className="relative flex min-h-[100svh] flex-col justify-end overflow-hidden bg-background">
+      {/* The mesh; the pointer and the four links below are vertices of it */}
+      <ContactMesh />
 
-      <div className="container relative z-10 mx-auto px-6 pb-10 pt-32 md:px-12">
+      <div className="container relative z-10 mx-auto px-6 pb-10 pt-28 md:px-12 md:pt-36">
         {/* SAY「مرحبا」HI */}
         <div className="flex items-center" aria-hidden="true">
           <motion.span
@@ -77,49 +85,59 @@ export function Footer() {
         </div>
         <h2 className="sr-only">Contact</h2>
 
-        <div className="mt-14 md:mt-20">
-          <p className="max-w-md text-[hsl(var(--foreground-soft))]">
-            Research, a role, or a project worth building. The fastest way to reach me is email.
-          </p>
+        <p
+          className="mt-8 font-mono text-[11px] uppercase leading-relaxed tracking-[0.16em] text-[hsl(var(--foreground-subtle))]"
+          data-guide-skip
+          aria-hidden="true"
+        >
+          Shortest path from you to <span data-path-readout className="text-[hsl(var(--gold))]" />
+        </p>
 
-          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4">
-            <a href={`mailto:${EMAIL}`} className="footer-email">
-              {EMAIL}
+        <div className="mt-14 grid gap-y-10 md:mt-10 md:min-h-[25rem] md:grid-cols-12 md:grid-rows-3 md:gap-x-6 md:gap-y-0">
+          <div className="md:col-span-7 md:row-start-2 md:self-center">
+            <a href={`mailto:${EMAIL}`} className="contact-terminal contact-terminal-email">
+              <span data-terminal="my inbox" className="contact-dot" aria-hidden="true" />
+              <span>
+                <span className="contact-kind">Email</span>
+                <span className="contact-label">{EMAIL}</span>
+              </span>
             </a>
             <button
               type="button"
               onClick={copyEmail}
-              className="inline-flex items-center gap-2 border border-border px-3 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-[hsl(var(--foreground-muted))] transition-colors hover:border-[hsl(var(--gold))] hover:text-[hsl(var(--gold))] focus-visible:border-[hsl(var(--gold))] focus-visible:text-[hsl(var(--gold))] focus-visible:outline-none"
+              className="ml-6 mt-4 inline-flex items-center gap-2 border border-border bg-background px-3 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-[hsl(var(--foreground-muted))] transition-colors hover:border-[hsl(var(--gold))] hover:text-[hsl(var(--gold))] focus-visible:border-[hsl(var(--gold))] focus-visible:text-[hsl(var(--gold))] focus-visible:outline-none"
             >
               {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
               <span aria-live="polite">{copied ? "Address copied" : "Copy address"}</span>
             </button>
           </div>
 
-          <ul className="mt-12 flex flex-wrap gap-x-10 gap-y-3">
-            {links.map((link) => (
-              <li key={link.label}>
-                <a
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group inline-flex items-center gap-1.5 text-lg font-light text-foreground transition-colors hover:text-[hsl(var(--gold))] md:text-xl"
-                >
-                  <span className="link-hover">{link.label}</span>
-                  <ArrowUpRight
-                    className="h-4 w-4 text-[hsl(var(--foreground-subtle))] transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[hsl(var(--gold))]"
-                    aria-hidden="true"
-                  />
-                </a>
-              </li>
-            ))}
-          </ul>
+          {links.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`contact-terminal md:col-span-3 ${link.place}`}
+            >
+              <span data-terminal={link.name} className="contact-dot" aria-hidden="true" />
+              <span>
+                <span className="contact-kind">{link.kind}</span>
+                <span className="contact-label">
+                  {link.label}
+                  <ArrowUpRight className="ml-1.5 inline h-[0.6em] w-[0.6em]" aria-hidden="true" />
+                </span>
+              </span>
+            </a>
+          ))}
         </div>
 
         {/* Bottom bar */}
         <div className="mt-20 grid gap-6 border-t border-border pt-8 md:grid-cols-[1fr_auto_1fr] md:items-end">
           <div>
-            <p className="text-sm text-foreground">YOUSSEF CHOUAY</p>
+            <p className="text-sm text-foreground">
+              YOUSSEF CHOUAY <span className="font-arabic text-[hsl(var(--gold))]">「يوسف شواي」</span>
+            </p>
             <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-[hsl(var(--foreground-subtle))]">
               Software Engineer & AI Researcher
             </p>
@@ -134,10 +152,7 @@ export function Footer() {
           </div>
 
           <div className="flex items-center gap-6 font-mono text-[10px] tracking-wider text-[hsl(var(--foreground-subtle))] md:justify-end">
-            <span data-guide-skip>
-              OTTAWA <LocalTime />
-            </span>
-            <span>© {currentYear}</span>
+            <span>© {new Date().getFullYear()}</span>
             <a
               href="#home"
               className="inline-flex items-center gap-1.5 uppercase text-[hsl(var(--foreground-muted))] transition-colors hover:text-[hsl(var(--gold))]"

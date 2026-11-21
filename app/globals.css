@@ -1199,193 +1199,213 @@
   --mug-coral: 11 62% 64%;
 }
 
-/* About: a statement that lights up word by word as it is scrolled through.
-   --lit is set from the scroll position; without script every word is lit. */
-.about-statement {
-  --lit: 9999;
-  max-width: 24em;
-  font-size: clamp(1.6rem, 1rem + 2.35vw, 3.1rem);
-  font-weight: 300;
-  line-height: 1.24;
-  letter-spacing: -0.022em;
-  color: hsl(var(--foreground));
-  text-wrap: pretty;
+/* Work: the projects as a power diagram. Each cell is a full-size layer cut
+   to its polygon; script sets the polygon and --cx/--cy/--r (the cell's centre
+   and inner radius) and --a (0 idle, 1 chosen). */
+.work-cells {
+  position: relative;
+  height: clamp(34rem, 84svh, 50rem);
+  margin-inline: -1.5rem;
+  opacity: 0;
+  transition: opacity 0.8s ease;
 }
 
-.about-statement > span {
-  opacity: clamp(0.2, calc((var(--lit) - var(--i)) / 6), 1);
+.work-cells[data-ready="true"] {
+  opacity: 1;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .about-statement > span {
-    opacity: 1;
+@media (max-width: 767px) {
+  .work-cells {
+    height: clamp(54rem, 250vw, 62rem);
   }
 }
 
-/* Works: one plate per project. Each sticks near the top and the next slides
-   over it, leaving a sliver of the ones before. */
-.work-plates {
-  margin-top: 4rem;
-  display: grid;
-  gap: 1.25rem;
+@media (min-width: 768px) {
+  .work-cells {
+    margin-inline: 0;
+  }
 }
 
-.work-plate {
-  border: 1px solid hsl(var(--border));
-  background: hsl(var(--card));
+.work-cell {
+  --a: 0;
+  --cx: 50%;
+  --cy: 50%;
+  --r: 10rem;
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  outline: none;
+  background:
+    radial-gradient(
+      circle at var(--cx) var(--cy),
+      hsl(var(--foreground) / calc(0.075 + 0.045 * var(--a))),
+      hsl(var(--foreground) / 0.012) calc(var(--r) * 2.3)
+    ),
+    hsl(var(--background));
 }
 
-.work-plate-link {
-  display: grid;
-  min-height: 100%;
+.work-cell-media {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: max-content;
+  pointer-events: none;
+  will-change: transform;
 }
 
-.work-plate-text {
+.work-cell-label {
+  position: absolute;
+  left: 0;
+  top: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 2.5rem;
-  padding: 1.5rem;
-  container-type: inline-size;
+  align-items: center;
+  text-align: center;
+  will-change: transform;
 }
 
-.work-plate-title {
-  /* Sized from the column, so the longest single-word title still fits on a line. */
-  font-size: clamp(2rem, 16.5cqi, 5rem);
-  font-weight: 700;
-  line-height: 0.95;
-  letter-spacing: -0.02em;
+.work-cell-index {
+  font-family: var(--font-roboto-mono), monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  color: hsl(var(--gold));
+}
+
+.work-cell-title {
+  margin-top: 0.3rem;
+  font-family: var(--font-oswald), sans-serif;
+  font-size: calc(1rem + 1.15rem * var(--a));
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: hsl(var(--foreground));
 }
 
-.work-plate-open {
+.work-cell-category {
+  margin-top: 0.4rem;
+  font-family: var(--font-roboto-mono), monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: hsl(var(--foreground-muted));
+}
+
+.work-cell-label[data-compact="true"] .work-cell-category {
+  display: none;
+}
+
+.work-cell-more {
+  margin-top: 0.85rem;
+  opacity: var(--a);
+}
+
+.work-cell-description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: hsl(var(--foreground-soft));
+}
+
+.work-cell-stack {
+  margin-top: 0.6rem;
+  font-family: var(--font-roboto-mono), monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  color: hsl(var(--foreground-subtle));
+}
+
+@media (max-width: 767px) {
+  .work-cell-description {
+    -webkit-line-clamp: 2;
+  }
+
+  .work-cell-stack {
+    display: none;
+  }
+}
+
+.work-cell-open {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  align-self: flex-start;
-  border-bottom: 1px solid hsl(var(--foreground-faint));
-  padding-bottom: 0.35rem;
+  gap: 0.4rem;
+  margin-top: 0.8rem;
   font-family: var(--font-roboto-mono), monospace;
-  font-size: 12px;
-  letter-spacing: 0.14em;
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
+  color: hsl(var(--gold));
+}
+
+.work-cells-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.work-cells-lines polygon {
+  fill: none;
+  stroke: hsl(var(--border));
+  stroke-width: 1;
+}
+
+.work-cells-lines polygon[data-active-outline] {
+  stroke: hsl(var(--gold));
+  stroke-width: 1.5;
+}
+
+/* Contact: each way to reach me is a vertex of the mesh behind the footer.
+   Script marks the one with the shortest path from the pointer. */
+.contact-terminal {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 1rem;
   color: hsl(var(--foreground));
-  transition: color 0.3s ease, border-color 0.3s ease;
+  transition: color 0.3s ease;
 }
 
-.work-plate-link:hover .work-plate-open,
-.work-plate-link:focus-visible .work-plate-open {
-  border-color: hsl(var(--gold));
-  color: hsl(var(--gold));
+.contact-dot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-top: 0.2rem;
+  border-radius: 9999px;
+  background: hsl(var(--gold));
 }
 
-.work-plate-link:focus-visible {
-  outline: 1px solid hsl(var(--gold));
-  outline-offset: 3px;
+.contact-kind {
+  display: block;
+  font-family: var(--font-roboto-mono), monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: hsl(var(--foreground-subtle));
 }
 
-.work-plate-stage {
-  position: relative;
-  display: flex;
-  min-height: 19rem;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  order: -1;
-  border-bottom: 1px solid hsl(var(--border));
-  background:
-    radial-gradient(58% 62% at 50% 46%, hsl(var(--gold) / 0.13), transparent 72%),
-    hsl(var(--wash));
-  padding: 2rem 1rem;
-}
-
-.work-plate-device {
-  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.work-plate-link:hover .work-plate-device {
-  transform: translateY(-6px) scale(1.015);
-}
-
-@media (min-width: 1024px) {
-  .work-plates {
-    gap: 0;
-    /* Room for the last plate to finish its stay. */
-    padding-bottom: 2rem;
-  }
-
-  .work-plate {
-    position: sticky;
-    top: calc(5.25rem + var(--n) * 0.85rem);
-    height: min(calc(100svh - 11rem), 40rem);
-    margin-bottom: 2.5rem;
-    box-shadow: 0 -24px 48px -28px hsl(var(--background));
-  }
-
-  .work-plate-link {
-    height: 100%;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  }
-
-  .work-plate-text {
-    padding: 2.25rem 2.5rem 2.5rem;
-  }
-
-  .work-plate-stage {
-    order: 0;
-    min-height: 0;
-    border-bottom: 0;
-    border-left: 1px solid hsl(var(--border));
-    padding: 2rem;
-  }
-
-  .work-plate-device {
-    zoom: calc(var(--zoom, 1) * 0.8);
-  }
-}
-
-@media (min-width: 1280px) and (min-height: 780px) {
-  .work-plate-device {
-    zoom: var(--zoom, 1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .work-plate-device {
-    transition: none;
-  }
-
-  .work-plate-link:hover .work-plate-device {
-    transform: none;
-  }
-}
-
-/* Footer: the name in ruqʿah behind the contact block, and the address as the headline. */
-.footer-signature {
-  font-size: clamp(11rem, 31vw, 31rem);
-  line-height: 1;
-  /* Opacity on the element, not the colour, so overlapping strokes don't double up. */
-  color: hsl(var(--gold));
-  opacity: 0.15;
-  white-space: nowrap;
-}
-
-.footer-email {
-  font-size: clamp(1.55rem, 0.6rem + 4.4vw, 4.75rem);
+.contact-label {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 1.6rem;
   font-weight: 300;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  color: hsl(var(--foreground));
-  background: linear-gradient(hsl(var(--gold)), hsl(var(--gold))) no-repeat 0 100% / 0 1px;
-  padding-bottom: 0.08em;
-  transition: background-size 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.contact-terminal-email .contact-label {
+  font-size: clamp(1.45rem, 4.4vw, 3.6rem);
   overflow-wrap: anywhere;
 }
 
-.footer-email:hover,
-.footer-email:focus-visible {
-  background-size: 100% 1px;
+.contact-terminal[data-nearest="true"],
+.contact-terminal:hover,
+.contact-terminal:focus-visible {
   color: hsl(var(--gold));
   outline: none;
 }
