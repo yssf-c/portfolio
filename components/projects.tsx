@@ -8,7 +8,6 @@ import { PrismFallback } from "@/components/prism-fallback";
 import Image from "next/image";
 import Link from "next/link";
 import { projects, type ProjectDetail } from "@/lib/project-data";
-import { DraftSwitch, useDraft } from "@/components/draft-switch";
 import {
   getProjectSignature,
   hasProjectSignatureTransition,
@@ -185,54 +184,29 @@ function SectionTitle() {
   );
 }
 
-// How much of a card's width its device takes, and of its height at most.
-const DEVICE_SHARE: Record<HoverPreview["device"], number> = {
-  mac: 0.54,
-  browser: 0.54,
-  tv: 0.52,
-  float: 0.48,
-  iphone: 0.25,
-  watch: 0.3,
-};
-
 const NEUTRAL_CARD = { bg: "hsl(var(--card))", fg: "hsl(var(--foreground))", accent: "hsl(var(--gold))", font: "inherit" };
 
-/**
- * Sizes a device to the box it sits in. A poster gives it a share of its
- * width, capped by a share of its height; `fill` overrides both shares.
- */
-function fitDevice(card: HTMLElement, device: HTMLElement, fill?: { wide: number; tall: number }) {
-  const kind = (device.dataset.device ?? "mac") as HoverPreview["device"];
-  const narrow = card.offsetWidth < 560;
-  if (!fill) card.dataset.narrow = String(narrow);
-  const wide = fill?.wide ?? (narrow ? Math.min(0.82, DEVICE_SHARE[kind] * 1.6) : DEVICE_SHARE[kind]);
-  const tall = fill?.tall ?? (narrow ? 0.4 : 0.56);
+/** Scales a device mock-up to fill the given shares of the box it sits in. */
+function fitDevice(box: HTMLElement, device: HTMLElement, fill: { wide: number; tall: number }) {
   const inner = device.firstElementChild as HTMLElement;
   const scale = Math.min(
-    (card.offsetWidth * wide) / (inner.offsetWidth || 1),
-    (card.offsetHeight * tall) / (inner.offsetHeight || 1),
+    (box.offsetWidth * fill.wide) / (inner.offsetWidth || 1),
+    (box.offsetHeight * fill.tall) / (inner.offsetHeight || 1),
   );
   device.style.setProperty("--scale", scale.toFixed(4));
 }
 
-/** A project's colours and typeface, as CSS variables for a poster or a row. */
+/** A project's name, colours and typeface (the ones its case study opens on), as CSS variables. */
 function projectLook(project: ProjectDetail) {
   const signature = getProjectSignature(project.id);
   const look = signature ?? NEUTRAL_CARD;
-  const title = signature?.title ?? project.title;
-  // Short names of two words stay on one line; the size follows whichever is wider, the line or the longest word.
-  const oneLine = title.length <= 14;
-  const longest = Math.max(...title.split(" ").map((word) => word.length), oneLine ? Math.ceil(title.length * 0.75) : 0);
   return {
-    title,
-    oneLine,
-    line: signature?.line ?? project.category,
+    title: signature?.title ?? project.title,
     style: {
       "--card-bg": look.bg,
       "--card-fg": look.fg,
       "--card-accent": look.accent,
       "--card-font": look.font,
-      "--chars": Math.max(5, longest),
     } as React.CSSProperties,
   };
 }
@@ -243,224 +217,6 @@ function openProject(event: React.MouseEvent<HTMLAnchorElement>, project: Projec
   if (isModifiedNavigation || !hasProjectSignatureTransition(project.id)) return;
   event.preventDefault();
   startProjectSignatureTransition(project.id, `/projects/${project.id}`);
-}
-
-/** One project as a poster in its own colour and typeface (the ones its case study opens on). */
-function Poster({ project, onFocusVisible }: { project: ProjectDetail; onFocusVisible?: () => void }) {
-  const look = projectLook(project);
-  return (
-    <Link
-      href={`/projects/${project.id}`}
-      data-card
-      className="reel-card"
-      style={look.style}
-      onClick={(event) => openProject(event, project)}
-      onFocus={(event) => event.currentTarget.matches(":focus-visible") && onFocusVisible?.()}
-    >
-      <div className="reel-card-top">
-        <span>{project.category}</span>
-        {project.timeline && project.timeline !== "Recent" && <span>{project.timeline}</span>}
-      </div>
-
-      <div data-device={project.hoverPreview?.device ?? "mac"} className="reel-card-device" data-guide-skip aria-hidden="true">
-        <div>
-          <ProjectDevice project={project} />
-        </div>
-      </div>
-
-      <div className="reel-card-name">
-        <h3 className={`reel-card-title ${look.oneLine ? "whitespace-nowrap" : ""}`}>{look.title}</h3>
-        <p className="reel-card-line">{look.line}</p>
-      </div>
-
-      <span className="reel-card-open">
-        <span>Open case study</span>
-        <span className="reel-card-arrow">
-          <ArrowUpRight aria-hidden="true" />
-        </span>
-      </span>
-    </Link>
-  );
-}
-
-/**
- * The projects as a reel of posters, each in its own colour and typeface (the
- * same ones its case study opens on). On wide screens the reel is pinned and
- * scrolling the page slides it sideways; otherwise it is swiped.
- */
-function WorkReel() {
-  const reelRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const countRef = useRef<HTMLSpanElement>(null);
-  const barRef = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    const reel = reelRef.current;
-    const track = trackRef.current;
-    if (!reel || !track) return;
-    const pinnedQuery = window.matchMedia("(min-width: 1024px) and (prefers-reduced-motion: no-preference)");
-    const cards = [...track.querySelectorAll<HTMLElement>("[data-card]")];
-    const devices = cards.map((card) => card.querySelector<HTMLElement>("[data-device]")!);
-    let travel = 0;
-    let frame = 0;
-
-    const show = (index: number, progress: number) => {
-      if (countRef.current) countRef.current.textContent = String(index + 1).padStart(2, "0");
-      if (barRef.current) barRef.current.style.transform = `scaleX(${progress.toFixed(4)})`;
-    };
-
-    const update = () => {
-      frame = 0;
-      const middle = window.innerWidth / 2;
-      let shift = 0;
-      let progress = 0;
-      if (pinnedQuery.matches) {
-        const rect = reel.getBoundingClientRect();
-        const range = rect.height - window.innerHeight;
-        progress = range > 0 ? Math.min(1, Math.max(0, -rect.top / range)) : 0;
-        shift = -progress * travel;
-        track.style.transform = `translate3d(${shift.toFixed(1)}px, 0, 0)`;
-      } else {
-        const range = track.scrollWidth - track.clientWidth;
-        progress = range > 0 ? track.scrollLeft / range : 0;
-        shift = -track.scrollLeft;
-      }
-      let current = 0;
-      let nearest = Infinity;
-      cards.forEach((card, index) => {
-        const centre = card.offsetLeft + shift + card.offsetWidth / 2;
-        const off = centre - middle;
-        if (Math.abs(off) < nearest) {
-          nearest = Math.abs(off);
-          current = index;
-        }
-        // The device drifts against the card as it crosses the screen.
-        devices[index].style.setProperty("--drift", pinnedQuery.matches ? `${((off / window.innerWidth) * -70).toFixed(1)}px` : "0px");
-      });
-      show(current, progress);
-    };
-    const requestUpdate = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-
-    const layout = () => {
-      cards.forEach((card, index) => fitDevice(card, devices[index]));
-      if (pinnedQuery.matches) {
-        travel = Math.max(0, track.offsetWidth - window.innerWidth);
-        reel.style.height = `${window.innerHeight + travel}px`;
-      } else {
-        reel.style.height = "";
-        track.style.transform = "";
-      }
-      update();
-    };
-
-    const resize = new ResizeObserver(layout);
-    resize.observe(track);
-    window.addEventListener("resize", layout);
-    window.addEventListener("scroll", requestUpdate, { passive: true });
-    track.addEventListener("scroll", requestUpdate, { passive: true });
-    pinnedQuery.addEventListener("change", layout);
-    layout();
-
-    return () => {
-      cancelAnimationFrame(frame);
-      resize.disconnect();
-      window.removeEventListener("resize", layout);
-      window.removeEventListener("scroll", requestUpdate);
-      track.removeEventListener("scroll", requestUpdate);
-      pinnedQuery.removeEventListener("change", layout);
-    };
-  }, []);
-
-  /** Keyboard focus on a card that is off to the side scrolls the page until the card is centred. */
-  const bringIntoView = (index: number) => {
-    const reel = reelRef.current;
-    const track = trackRef.current;
-    if (!reel || !track || !window.matchMedia("(min-width: 1024px) and (prefers-reduced-motion: no-preference)").matches) return;
-    const card = track.children[index] as HTMLElement;
-    const travel = track.offsetWidth - window.innerWidth;
-    const wanted = Math.min(travel, Math.max(0, card.offsetLeft + card.offsetWidth / 2 - window.innerWidth / 2));
-    const top = reel.getBoundingClientRect().top + window.scrollY;
-    if (Math.abs(window.scrollY - (top + wanted)) > 4) window.scrollTo({ top: top + wanted });
-  };
-
-  return (
-    <div ref={reelRef} className="reel">
-      <div className="reel-stage">
-        <div ref={trackRef} className="reel-track">
-          {projects.map((project, index) => (
-            <Poster key={project.id} project={project} onFocusVisible={() => bringIntoView(index)} />
-          ))}
-        </div>
-
-        <div className="reel-meter container mx-auto px-6 md:px-12" data-guide-skip aria-hidden="true">
-          <span className="tabular-nums">
-            <span ref={countRef}>01</span> / {String(projects.length).padStart(2, "0")}
-          </span>
-          <span className="reel-meter-line">
-            <span ref={barRef} />
-          </span>
-          <span className="reel-meter-hint">Keep scrolling</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * The same posters as a deck: each one sticks near the top of the screen and
- * the next slides up over it, the covered one sinking back a little.
- */
-function WorkStack() {
-  const stackRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const stack = stackRef.current;
-    if (!stack) return;
-    const cards = [...stack.querySelectorAll<HTMLElement>("[data-card]")];
-    const devices = cards.map((card) => card.querySelector<HTMLElement>("[data-device]")!);
-    let frame = 0;
-
-    const update = () => {
-      frame = 0;
-      cards.forEach((card, index) => {
-        const next = cards[index + 1];
-        if (!next) return;
-        // 0 while the next poster is still below this one, 1 once it sits on top.
-        const gap = next.parentElement!.getBoundingClientRect().top - card.parentElement!.getBoundingClientRect().top;
-        const cover = Math.min(1, Math.max(0, 1 - gap / card.offsetHeight));
-        card.style.setProperty("--cover", cover.toFixed(4));
-      });
-    };
-    const requestUpdate = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-    const layout = () => {
-      cards.forEach((card, index) => fitDevice(card, devices[index]));
-      update();
-    };
-
-    const resize = new ResizeObserver(layout);
-    resize.observe(stack);
-    window.addEventListener("scroll", requestUpdate, { passive: true });
-    layout();
-    return () => {
-      cancelAnimationFrame(frame);
-      resize.disconnect();
-      window.removeEventListener("scroll", requestUpdate);
-    };
-  }, []);
-
-  return (
-    <div ref={stackRef} className="work-stack container mx-auto px-6 md:px-12">
-      {projects.map((project, index) => (
-        <div key={project.id} className="work-stack-slot" style={{ "--i": index } as React.CSSProperties}>
-          <Poster project={project} />
-        </div>
-      ))}
-    </div>
-  );
 }
 
 /**
@@ -569,18 +325,11 @@ function WorkIndex() {
   );
 }
 
-const WORK_DRAFTS = [
-  { id: "stack", label: "Stack" },
-  { id: "index", label: "Index" },
-  { id: "reel", label: "Reel" },
-] as const;
-
 export function Projects() {
   const reduceMotion = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
   const shouldLoadPrism = useInView(sectionRef, { once: true, margin: "300px" });
-  const [draft, setDraft] = useDraft("work", WORK_DRAFTS, "stack");
 
   return (
     <section ref={sectionRef} id="work" className="relative overflow-x-clip bg-background py-16 md:py-24 noise-bg">
@@ -621,11 +370,9 @@ export function Projects() {
 
       </div>
 
-      <div className="relative z-10 container mx-auto mt-14 flex justify-end px-6 md:px-12">
-        <DraftSwitch section="Work" options={WORK_DRAFTS} value={draft} onChange={setDraft} />
+      <div className="mt-14">
+        <WorkIndex />
       </div>
-
-      {draft === "stack" ? <WorkStack /> : draft === "index" ? <WorkIndex /> : <WorkReel />}
 
       <div className="relative z-10 container mx-auto px-6 md:px-12">
         <div className="mt-10 flex items-center justify-between">

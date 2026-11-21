@@ -495,12 +495,6 @@ function IndexReader() {
                     <Eyebrow>
                       {String(i + 1).padStart(2, "0")} · {r.period}
                     </Eyebrow>
-                    {!r.end && (
-                      <span className="xp-now">
-                        <LiveDot />
-                        Now
-                      </span>
-                    )}
                   </span>
                   <h3 className="mt-4 text-3xl font-light leading-[1.05] tracking-[-0.02em] text-foreground md:text-5xl">
                     {r.role}

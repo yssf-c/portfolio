@@ -81,23 +81,19 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const [hovered, setHovered] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
 
-      // Update active section based on scroll position
-      const sections = ["home", "about", "education", "experience", "work"];
-      for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          if (rect.top <= 100 && rect.bottom >= 100) {
-            setActiveSection(section);
-            break;
-          }
-        }
+      // The section under the pill; none once the page is past the last one listed.
+      let current = "";
+      for (const section of ["home", "about", "education", "experience", "work"]) {
+        const rect = document.getElementById(section)?.getBoundingClientRect();
+        if (rect && rect.top <= 120 && rect.bottom > 120) current = section;
       }
+      setActiveSection(current);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -138,7 +134,7 @@ export function Navbar() {
             YCAY
           </Link>
 
-          <nav className="nav-pill-links" aria-label="Primary navigation">
+          <nav className="nav-pill-links" aria-label="Primary navigation" onPointerLeave={() => setHovered(null)}>
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = isHome && activeSection === link.href.replace("#", "");
@@ -153,7 +149,15 @@ export function Navbar() {
                   aria-current={isActive ? "location" : undefined}
                   aria-label={link.label}
                   title={link.label}
+                  onPointerEnter={(e) => e.pointerType === "mouse" && setHovered(link.href)}
                 >
+                  {hovered === link.href && !isActive && (
+                    <motion.span
+                      layoutId="nav-hover"
+                      className="nav-pill-hover"
+                      transition={{ type: "spring", stiffness: 520, damping: 40 }}
+                    />
+                  )}
                   {isActive && (
                     <motion.span
                       layoutId="nav-lens"
@@ -174,7 +178,15 @@ export function Navbar() {
               className="nav-pill-link"
               aria-label="CV"
               title="CV"
+              onPointerEnter={(e) => e.pointerType === "mouse" && setHovered("cv")}
             >
+              {hovered === "cv" && (
+                <motion.span
+                  layoutId="nav-hover"
+                  className="nav-pill-hover"
+                  transition={{ type: "spring", stiffness: 520, damping: 40 }}
+                />
+              )}
               <FileText className="nav-pill-icon nav-pill-icon-always" aria-hidden="true" />
               <span className="nav-pill-label">CV</span>
             </a>

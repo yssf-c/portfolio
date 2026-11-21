@@ -3,25 +3,28 @@
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
 /**
- * A liquid-glass surface: a frosted, tinted body, a bright rim, and a band
- * inside the edge where the page behind is bent, as through the bevel of a
- * lens. The bend is an SVG displacement map drawn to the surface's own size;
- * only Chromium applies SVG filters to a backdrop, so elsewhere the band
- * falls back to a brighter, sharper strip (see `.glass-edge`).
+ * A liquid-glass surface: a frosted, tinted body whose edge bends the page
+ * behind it, as through the bevel of a lens, under a bright rim. The bend is
+ * an SVG displacement map drawn to the surface's own size, and the frosted
+ * body fades out over it through a mask drawn the same way, so there is no
+ * seam between the two. Only Chromium applies SVG filters to a backdrop;
+ * elsewhere the surface is frosted edge to edge (see `.glass-edge`).
  */
 
 /** How far, in CSS pixels, the backdrop is pulled inward at the very edge. */
 const BEND = 22;
 
-type Map = { href: string; width: number; height: number };
+type Map = { href: string; mask: string; width: number; height: number };
 
-function drawMap(width: number, height: number, bevel: number): string {
+/** The displacement map, and the mask that fades the frosted body out towards the edge. */
+function drawMap(width: number, height: number, bevel: number): { href: string; mask: string } | null {
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext("2d");
-  if (!ctx) return "";
+  if (!ctx) return null;
   const image = ctx.createImageData(width, height);
+  const fade = ctx.createImageData(width, height);
   const radius = Math.min(width, height) / 2;
   const halfW = width / 2 - radius, halfH = height / 2 - radius;
   for (let j = 0; j < height; j++)
@@ -46,9 +49,14 @@ function drawMap(width: number, height: number, bevel: number): string {
       image.data[k + 1] = Math.round(127.5 - ny * bend * 127.5);
       image.data[k + 2] = 128;
       image.data[k + 3] = 255;
+      // Frost: none in the outer third of the bevel, full a little past it.
+      const f = Math.min(1, Math.max(0, (depth - bevel * 0.3) / (bevel * 0.9)));
+      fade.data[k + 3] = Math.round(f * f * (3 - 2 * f) * 255);
     }
   ctx.putImageData(image, 0, 0);
-  return canvas.toDataURL();
+  const href = canvas.toDataURL();
+  ctx.putImageData(fade, 0, 0);
+  return { href, mask: canvas.toDataURL() };
 }
 
 type Props = {
@@ -74,8 +82,8 @@ export function Glass({ className = "", style, children }: Props) {
       const width = element.offsetWidth, height = element.offsetHeight;
       if (!width || !height) return;
       const bevel = parseFloat(getComputedStyle(element).getPropertyValue("--glass-bevel")) || 12;
-      const href = drawMap(width, height, bevel);
-      if (href) setMap({ href, width, height });
+      const drawn = drawMap(width, height, bevel);
+      if (drawn) setMap({ ...drawn, width, height });
     };
     const observer = new ResizeObserver(() => {
       window.clearTimeout(timer);
@@ -93,7 +101,12 @@ export function Glass({ className = "", style, children }: Props) {
     <div
       ref={ref}
       className={`glass-pill ${className}`}
-      style={map ? ({ ...style, "--glass-refract": `url(#${id})` } as CSSProperties) : style}
+      data-refract={map ? "" : undefined}
+      style={
+        map
+          ? ({ ...style, "--glass-refract": `url(#${id})`, "--glass-mask": `url("${map.mask}")` } as CSSProperties)
+          : style
+      }
     >
       {map && (
         <svg className="glass-defs" width="0" height="0" aria-hidden="true">
@@ -111,8 +124,8 @@ export function Glass({ className = "", style, children }: Props) {
           </filter>
         </svg>
       )}
-      <span className="glass-body" aria-hidden="true" />
       <span className="glass-edge" aria-hidden="true" />
+      <span className="glass-body" aria-hidden="true" />
       <span className="glass-rim" aria-hidden="true" />
       {children}
     </div>

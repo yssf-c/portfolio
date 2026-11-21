@@ -8,7 +8,13 @@ import { useNow } from "@/components/experience";
 import { CITATION_REVEAL_EVENT } from "@/components/citation-focus";
 import { degrees, type Degree, type YearMonth } from "@/lib/profile-data";
 import { DraftSwitch, useDraft } from "@/components/draft-switch";
-import { EducationCards, EducationRows } from "@/components/education-drafts";
+import {
+  EducationBento,
+  EducationCards,
+  EducationRows,
+  EducationSpotlight,
+  EducationYears,
+} from "@/components/education-drafts";
 
 const msc = degrees.find((d) => d.id === "msc")!;
 const basc = degrees.find((d) => d.id === "basc")!;
@@ -146,6 +152,9 @@ function BascDetail() {
 // ---------------------------------------------------------------------------
 
 const EDUCATION_DRAFTS = [
+  { id: "bento", label: "Bento" },
+  { id: "spotlight", label: "Thesis" },
+  { id: "years", label: "Years" },
   { id: "cards", label: "Diplomas" },
   { id: "rows", label: "Index" },
   { id: "timeline", label: "Timeline" },
@@ -158,7 +167,7 @@ export function Education() {
   const now = useNow([2026, 9]);
   const nowPct = toPct(now);
   const mscProgress = progressOf(msc, now);
-  const [draft, setDraft] = useDraft("education", EDUCATION_DRAFTS, "cards");
+  const [draft, setDraft] = useDraft("education", EDUCATION_DRAFTS, "bento");
 
   // A citation from the site guide can point at either degree.
   useEffect(() => {
@@ -225,6 +234,9 @@ export function Education() {
           <DraftSwitch section="Education" options={EDUCATION_DRAFTS} value={draft} onChange={setDraft} />
         </div>
 
+        {draft === "bento" && <EducationBento progress={mscProgress} />}
+        {draft === "spotlight" && <EducationSpotlight progress={mscProgress} />}
+        {draft === "years" && <EducationYears />}
         {draft === "cards" && <EducationCards progress={mscProgress} />}
         {draft === "rows" && <EducationRows />}
         {draft === "timeline" && (
