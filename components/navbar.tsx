@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll } from "framer-motion";
 import {
   Menu,
   X,
@@ -80,6 +80,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const { scrollYProgress } = useScroll();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -232,7 +233,7 @@ export function Navbar() {
             <div className="hidden shrink-0 items-center gap-4 md:flex">
               <ThemeToggle />
               <span className="font-mono text-[10px] tracking-[0.15em] text-foreground/50">
-                [2025]
+                [{new Date().getFullYear()}]
               </span>
             </div>
 
@@ -252,6 +253,12 @@ export function Navbar() {
             </div>
           </div>
         </div>
+        {/* How far down the page the reader is */}
+        <motion.div
+          className="absolute -bottom-px left-0 h-px w-full origin-left bg-[hsl(var(--gold))]"
+          style={{ scaleX: scrollYProgress }}
+          aria-hidden="true"
+        />
       </motion.header>
 
       {/* Mobile Menu */}
