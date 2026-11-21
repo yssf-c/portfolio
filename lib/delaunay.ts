@@ -11,6 +11,8 @@ export type Triangle = {
   x: number;
   y: number;
   r: number;
+  /** When the triangle was made, for callers that animate the construction. */
+  born?: number;
 };
 
 export type Points = { x: number[]; y: number[] };
@@ -45,25 +47,33 @@ export function cavity(triangles: Triangle[], x: number, y: number) {
   return { bad, edges: [...edges.values()] };
 }
 
-/** Adds point `index` (already in `p`) to the triangulation, in place. */
+/**
+ * Adds point `index` (already in `p`) to the triangulation, in place. The new
+ * triangles are the last ones in the array; their count is returned.
+ */
 export function insert(triangles: Triangle[], p: Points, index: number) {
   const { bad, edges } = cavity(triangles, p.x[index], p.y[index]);
   for (let i = bad.length - 1; i >= 0; i--) {
     triangles[bad[i]] = triangles[triangles.length - 1];
     triangles.pop();
   }
+  let made = 0;
   for (const [u, v] of edges) {
     const t = triangle(p, u, v, index);
-    if (t) triangles.push(t);
+    if (!t) continue;
+    triangles.push(t);
+    made++;
   }
+  return made;
 }
 
 /**
- * Triangulates the points. Three far-away helper points are appended to `p`
- * and stay there; triangles that touch them are kept (they lie outside any
+ * Starts a triangulation of the points without inserting any: three far-away
+ * helper points are appended to `p` and stay there, and the one triangle they
+ * make is returned. Triangles that touch them are kept (they lie outside any
  * sensible viewport) so later insertions keep working.
  */
-export function triangulate(p: Points): Triangle[] {
+export function seed(p: Points): Triangle[] {
   const n = p.x.length;
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (let i = 0; i < n; i++) {
@@ -76,7 +86,13 @@ export function triangulate(p: Points): Triangle[] {
   const mx = (minX + maxX) / 2, my = (minY + maxY) / 2;
   p.x.push(mx - span, mx, mx + span);
   p.y.push(my - span, my + span, my - span);
-  const triangles = [triangle(p, n, n + 1, n + 2)!];
+  return [triangle(p, n, n + 1, n + 2)!];
+}
+
+/** Triangulates the points, all at once. See `seed` for the helper points. */
+export function triangulate(p: Points): Triangle[] {
+  const n = p.x.length;
+  const triangles = seed(p);
   for (let i = 0; i < n; i++) insert(triangles, p, i);
   return triangles;
 }

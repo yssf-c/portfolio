@@ -3,9 +3,8 @@
 import { useRef, useState } from "react";
 import { motion, useMotionValue, useReducedMotion, useSpring } from "framer-motion";
 import { ArrowUp, ArrowUpRight } from "lucide-react";
-import { LocalTime } from "@/components/local-time";
 
-const EMAIL = "ychou031@uottawa.ca";
+const EMAIL = "contact@youssefchouay.com";
 
 const links = [
   { label: "GitHub", href: "https://github.com/yssf-c" },
@@ -67,11 +66,6 @@ export function Footer() {
             Research, a role, or a project worth building.
             <br />
             The fastest way to reach me is email.
-          </p>
-          <p className="site-footer-place" data-guide-skip>
-            Ottawa, Canada
-            <br />
-            <LocalTime /> local time
           </p>
         </div>
 

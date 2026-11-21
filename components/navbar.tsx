@@ -18,6 +18,7 @@ import {
   BriefcaseBusiness,
   FolderGit2,
 } from "lucide-react";
+import { Glass } from "@/components/glass";
 
 const navLinks = [
   { href: "#home", label: "HOME", arabic: "الرئيسية", icon: Home },
@@ -65,7 +66,7 @@ function ThemeToggle({ className = "" }: { className?: string }) {
     <button
       type="button"
       onClick={() => setTheme(nextTheme)}
-      className={`inline-flex h-9 w-9 items-center justify-center text-foreground/80 transition-colors duration-300 hover:text-gold focus-visible:outline-none focus-visible:text-gold ${className}`}
+      className={`inline-flex h-9 w-9 items-center justify-center text-foreground/80 transition-colors duration-300 hover:text-gold focus-visible:text-gold ${className}`}
       aria-label={ariaLabel}
       title={mounted ? `Theme: ${label}` : "Theme"}
     >
@@ -130,129 +131,68 @@ export function Navbar() {
 
   return (
     <>
-      <motion.header
-        className={`fixed top-0 left-0 right-0 z-50 border-b transition-all duration-500 ${
-          scrolled
-            ? "border-border/70 bg-background/85 py-3 shadow-sm backdrop-blur-md"
-            : "border-border/20 bg-background/55 py-5 backdrop-blur-sm"
-        }`}
-        initial={false}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.2, ease: [0.55, 0.45, 0.16, 1] }}
-      >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-10 xl:px-12">
-          <div className="flex items-center justify-between gap-3">
-            {/* Logo */}
-            <Link
-              href="/"
-              className="shrink-0 text-foreground font-light text-base tracking-[0.1em] hover:text-gold transition-colors sm:text-lg"
+      {/* A floating glass pill; the lens under the current section slides between links */}
+      <header className="nav-shell" data-scrolled={scrolled ? "" : undefined}>
+        <Glass className="nav-pill">
+          <Link href="/" className="nav-pill-logo">
+            YCAY
+          </Link>
+
+          <nav className="nav-pill-links" aria-label="Primary navigation">
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              const isActive = isHome && activeSection === link.href.replace("#", "");
+
+              return (
+                <a
+                  key={link.href}
+                  href={isHome ? link.href : `/${link.href}`}
+                  onClick={(e) => handleNavClick(e, link.href)}
+                  className="nav-pill-link"
+                  data-active={isActive ? "" : undefined}
+                  aria-current={isActive ? "location" : undefined}
+                  aria-label={link.label}
+                  title={link.label}
+                >
+                  {isActive && (
+                    <motion.span
+                      layoutId="nav-lens"
+                      className="nav-pill-lens"
+                      transition={{ type: "spring", stiffness: 420, damping: 34, mass: 0.9 }}
+                    />
+                  )}
+                  <Icon className="nav-pill-icon" aria-hidden="true" />
+                  <span className="nav-pill-label">{link.label}</span>
+                </a>
+              );
+            })}
+
+            <a
+              href="/data/resume.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="nav-pill-link"
+              aria-label="CV"
+              title="CV"
             >
-              YCAY
-            </Link>
+              <FileText className="nav-pill-icon nav-pill-icon-always" aria-hidden="true" />
+              <span className="nav-pill-label">CV</span>
+            </a>
+          </nav>
 
-            {/* Compact Navigation */}
-            <nav
-              className="hidden flex-1 items-center justify-center gap-1 sm:flex md:hidden"
-              aria-label="Primary navigation"
-            >
-              {navLinks.map((link) => {
-                const Icon = link.icon;
-                const isActive = isHome && activeSection === link.href.replace("#", "");
-
-                return (
-                  <a
-                    key={link.href}
-                    href={isHome ? link.href : `/${link.href}`}
-                    onClick={(e) => handleNavClick(e, link.href)}
-                    className={`nav-link inline-flex h-9 w-9 items-center justify-center ${
-                      isActive ? "active" : ""
-                    }`}
-                    aria-label={link.label}
-                    title={link.label}
-                  >
-                    <Icon className="h-4 w-4" aria-hidden="true" />
-                    <span className="sr-only">{link.label}</span>
-                  </a>
-                );
-              })}
-
-              <a
-                href="/data/resume.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nav-link inline-flex h-9 w-9 items-center justify-center"
-                aria-label="CV"
-                title="CV"
-              >
-                <FileText className="h-4 w-4" aria-hidden="true" />
-                <span className="sr-only">CV</span>
-              </a>
-            </nav>
-
-            {/* Desktop Navigation */}
-            <nav
-              className="hidden flex-1 items-center justify-center gap-2 md:flex lg:gap-4 xl:flex-none xl:justify-start xl:gap-12"
-              aria-label="Primary navigation"
-            >
-              {navLinks.map((link) => {
-                const Icon = link.icon;
-                const isActive = isHome && activeSection === link.href.replace("#", "");
-
-                return (
-                  <a
-                    key={link.href}
-                    href={isHome ? link.href : `/${link.href}`}
-                    onClick={(e) => handleNavClick(e, link.href)}
-                    className={`nav-link inline-flex h-10 w-10 items-center justify-center xl:h-auto xl:w-auto ${
-                      isActive ? "active" : ""
-                    }`}
-                    aria-label={link.label}
-                    title={link.label}
-                  >
-                    <Icon className="h-4 w-4 xl:hidden" aria-hidden="true" />
-                    <span className="hidden xl:inline">{link.label}</span>
-                  </a>
-                );
-              })}
-
-              {/* Resume link */}
-              <a
-                href="/data/resume.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nav-link inline-flex h-10 w-10 items-center justify-center gap-2 xl:h-auto xl:w-auto"
-                aria-label="CV"
-                title="CV"
-              >
-                <FileText className="h-4 w-4 xl:h-3 xl:w-3" aria-hidden="true" />
-                <span className="hidden xl:inline">CV</span>
-              </a>
-            </nav>
-
-            <div className="hidden shrink-0 items-center gap-4 md:flex">
-              <ThemeToggle />
-              <span className="font-mono text-[10px] tracking-[0.15em] text-foreground/50">
-                [2025]
-              </span>
-            </div>
-
-            <div className="flex shrink-0 items-center gap-1 md:hidden">
-              <ThemeToggle />
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 text-foreground transition-colors hover:text-gold sm:hidden"
-                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-              >
-                {mobileMenuOpen ? (
-                  <X className="w-5 h-5" />
-                ) : (
-                  <Menu className="w-5 h-5" />
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </motion.header>
+          <span className="nav-pill-rule" aria-hidden="true" />
+          <ThemeToggle className="nav-pill-button" />
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="nav-pill-button nav-pill-menu"
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </button>
+        </Glass>
+      </header>
 
       {/* Mobile Menu */}
       <AnimatePresence>

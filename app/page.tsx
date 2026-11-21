@@ -43,13 +43,9 @@ export default async function Home() {
 
           {/* Everything above the footer is one sheet; the footer shows from under it as it lifts away */}
           <div className="page-sheet">
-            {/* The hero stays put while the About section slides up over it */}
-            <div id="home" className="relative">
-              <div className="sticky top-0">
-                <Hero />
-              </div>
-              <About />
-            </div>
+            <Hero />
+
+            <About />
 
             <Education />
 

@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { cavity, insert, triangulate, type Points, type Triangle } from "@/lib/delaunay";
+import { cavity, insert, seed, triangulate, type Points, type Triangle } from "@/lib/delaunay";
 import { mulberry32 } from "@/lib/rng";
 import { INTRO_MS } from "@/components/preloader";
 
 /**
  * The hero monogram, drawn as a Delaunay triangulation: points are sampled
  * along and inside the letters and across the rest of the hero, triangulated,
- * and the letters are the triangles that fall inside the glyphs. The pointer
- * is a live vertex, and a click keeps it.
+ * and the letters are the triangles that fall inside the glyphs. On load the
+ * triangulation is built in view, a point at a time, so the letters come
+ * together out of coarse facets. The pointer is a live vertex, and a click
+ * keeps it.
  */
 
 export type MeshStats = { vertices: number; triangles: number };
@@ -22,9 +24,14 @@ type Props = {
   onStats?: (stats: MeshStats) => void;
 };
 
-const SWEEP_DELAY = 350;
-const SWEEP_MS = 1500;
-const FADE_MS = 520;
+const BUILD_DELAY = 300;
+const BUILD_MS = 2900;
+/** Points land slowly at first, so the first triangles can be watched splitting. */
+const BUILD_EASE = 2.3;
+/** How long a new triangle stays gold, and a new point stays marked. */
+const FLASH_MS = 460;
+const DOT_MS = 620;
+const SETTLE_MS = 620;
 const MAX_PINNED = 160;
 
 export function HeroMesh({ left, right, onLayout, onStats }: Props) {
@@ -59,6 +66,14 @@ export function HeroMesh({ left, right, onLayout, onStats }: Props) {
     let pinned = 0;
     let retries = 0;
     let started = 0;
+    // The construction: points go in in `order`, `built` of them so far.
+    let order: number[] = [];
+    let built = 0;
+    let doneAt = -Infinity;
+    let glyphPoints = 0; // points [0, glyphPoints) lie on or inside the letters
+    let landed: number[] = []; // per-point, when it went in
+    let replay = !reduceMotion; // only the first build is animated, not a resize
+    let lastReport = 0;
     // On a first visit the opening curtain is still down when this mounts; start as it lifts.
     const introDelay = document.documentElement.dataset.intro === "play" ? INTRO_MS : 0;
     let pointer: { x: number; y: number } | null = null;
@@ -191,6 +206,8 @@ export function HeroMesh({ left, right, onLayout, onStats }: Props) {
         if (inside(x, y)) tryAdd(x, y, innerGap);
       }
 
+      glyphPoints = px.length;
+
       // 3. Everywhere else, growing sparser away from the letters.
       const margin = 48;
       for (let i = 0; i < 9000; i++) {
@@ -214,11 +231,26 @@ export function HeroMesh({ left, right, onLayout, onStats }: Props) {
 
       points = { x: px, y: py };
       helper = px.length;
-      triangles = triangulate(points);
-      shade = points.x.map(() => random());
+      order = px.map((_, i) => i);
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      landed = [];
       pinned = 0;
+      if (replay) {
+        replay = false;
+        triangles = seed(points);
+        built = 0;
+        doneAt = Infinity;
+        started = performance.now();
+      } else {
+        triangles = triangulate(points);
+        built = order.length;
+        doneAt = -Infinity;
+      }
+      shade = points.x.map(() => random());
       report();
-      started = reduceMotion ? -Infinity : performance.now();
       schedule();
     };
 
@@ -240,37 +272,70 @@ export function HeroMesh({ left, right, onLayout, onStats }: Props) {
     const draw = (now: number) => {
       frame = 0;
       if (disposed || !width) return;
-      const elapsed = now - started - SWEEP_DELAY - introDelay;
-      const sweeping = elapsed < SWEEP_MS + FADE_MS;
-      const sweepX = (elapsed / SWEEP_MS) * (width + 80) - 40;
       const { x, y } = points;
+
+      // Build: insert the points due by now, and date what each one makes.
+      if (built < order.length) {
+        const t = (now - started - BUILD_DELAY - introDelay) / BUILD_MS;
+        const due = t >= 1 ? order.length : t <= 0 ? 0 : Math.max(3, Math.ceil(order.length * t ** BUILD_EASE));
+        while (built < due) {
+          const index = order[built++];
+          const made = insert(triangles, points, index);
+          for (let k = 1; k <= made; k++) triangles[triangles.length - k].born = now;
+          landed[index] = now;
+        }
+        if (built === order.length) doneAt = now;
+        if (built === order.length || now - lastReport > 60) {
+          lastReport = now;
+          report();
+        }
+      }
+      const building = built < order.length;
+      const settling = now - doneAt < SETTLE_MS;
+      const animating = building || settling;
+      // Until the mesh is whole, only facets made of letter points are filled,
+      // so the letters arrive in shards; the slivers along their edges follow.
+      const rest = building ? 0 : Math.min(1, Math.max(0, (now - doneAt) / (SETTLE_MS * 0.7)));
 
       // The pointer joins the mesh for this frame only.
       let hole: Set<number> | null = null;
       let fan: [number, number][] = [];
-      if (pointer && !sweeping) {
+      if (pointer && !animating) {
         const found = cavity(triangles, pointer.x, pointer.y);
         hole = new Set(found.bad);
         fan = found.edges;
       }
 
-      type Facet = { ax: number; ay: number; bx: number; by: number; cx: number; cy: number; tone: number; show: number };
-      const facets: Facet[] = [];
-      const push = (ax: number, ay: number, bx: number, by: number, cx: number, cy: number, tone: number) => {
-        const mx = (ax + bx + cx) / 3;
-        const show = sweeping ? Math.min(1, Math.max(0, ((sweepX - mx) / (width + 80)) * (SWEEP_MS / FADE_MS))) : 1;
-        if (show > 0) facets.push({ ax, ay, bx, by, cx, cy, tone, show });
+      type Facet = {
+        ax: number; ay: number; bx: number; by: number; cx: number; cy: number;
+        tone: number;
+        /** 0 to 1 as the facet appears, and 1 to 0 as its gold fades. */
+        show: number;
+        flash: number;
+        fill: number;
       };
+      const facets: Facet[] = [];
       for (let i = 0; i < triangles.length; i++) {
         const t = triangles[i];
         if (hole?.has(i) || touchesHelper(t)) continue;
-        push(x[t.a], y[t.a], x[t.b], y[t.b], x[t.c], y[t.c], (shade[t.a] + shade[t.b] + shade[t.c]) / 3);
+        const age = t.born === undefined ? Infinity : now - t.born;
+        const ofLetters = t.a < glyphPoints && t.b < glyphPoints && t.c < glyphPoints;
+        facets.push({
+          ax: x[t.a], ay: y[t.a], bx: x[t.b], by: y[t.b], cx: x[t.c], cy: y[t.c],
+          tone: (shade[t.a] + shade[t.b] + shade[t.c]) / 3,
+          show: Math.min(1, age / 140),
+          flash: age < FLASH_MS ? (1 - age / FLASH_MS) ** 1.6 : 0,
+          fill: ofLetters ? 1 : rest,
+        });
       }
       if (pointer && hole)
         for (const [u, v] of fan) {
           if (u >= helper && u < helper + 3) continue;
           if (v >= helper && v < helper + 3) continue;
-          push(x[u], y[u], x[v], y[v], pointer.x, pointer.y, (shade[u] + shade[v]) / 2);
+          facets.push({
+            ax: x[u], ay: y[u], bx: x[v], by: y[v], cx: pointer.x, cy: pointer.y,
+            tone: (shade[u] + shade[v]) / 2, show: 1, flash: 0, fill: 1,
+          });
         }
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -292,16 +357,18 @@ export function HeroMesh({ left, right, onLayout, onStats }: Props) {
         ctx.lineTo(f.cx, f.cy);
         ctx.closePath();
         let glow = 0;
-        if (pointer && !sweeping) {
+        if (pointer && !animating) {
           const d = Math.hypot((f.ax + f.bx + f.cx) / 3 - pointer.x, (f.ay + f.by + f.cy) / 3 - pointer.y);
           glow = Math.max(0, 1 - d / reach) ** 2;
         }
+        glow = Math.max(glow, f.flash * 0.9);
         if (glow > 0.02) {
-          ctx.strokeStyle = `hsl(${colors.gold} / ${0.07 + glow * 0.5})`;
+          ctx.strokeStyle = `hsl(${colors.gold} / ${(0.07 + glow * 0.5) * f.show})`;
         } else {
           ctx.strokeStyle = `hsl(${colors.fg} / ${0.075 * f.show})`;
         }
         ctx.stroke();
+        if (f.fill <= 0) continue;
 
         // The letters: the same triangles, filled, on their own layer.
         const minX = Math.min(f.ax, f.bx, f.cx), maxX = Math.max(f.ax, f.bx, f.cx);
@@ -313,14 +380,14 @@ export function HeroMesh({ left, right, onLayout, onStats }: Props) {
         layerCtx.lineTo(f.bx, f.by);
         layerCtx.lineTo(f.cx, f.cy);
         layerCtx.closePath();
-        layerCtx.fillStyle = `hsl(${colors.fg} / ${(0.74 + 0.26 * f.tone) * f.show})`;
+        layerCtx.fillStyle = `hsl(${colors.fg} / ${(0.74 + 0.26 * f.tone) * f.show * f.fill})`;
         layerCtx.fill();
         if (glow > 0.02) {
-          layerCtx.fillStyle = `hsl(${colors.gold} / ${glow * 0.95})`;
+          layerCtx.fillStyle = `hsl(${colors.gold} / ${glow * 0.95 * f.fill})`;
           layerCtx.fill();
         }
         layerCtx.lineWidth = 0.9;
-        layerCtx.strokeStyle = `hsl(${colors.bg} / ${0.55 * f.show})`;
+        layerCtx.strokeStyle = `hsl(${colors.bg} / ${0.55 * f.show * f.fill})`;
         layerCtx.stroke();
       }
 
@@ -366,16 +433,22 @@ export function HeroMesh({ left, right, onLayout, onStats }: Props) {
         }
       }
 
-      if (sweeping && elapsed > 0 && elapsed < SWEEP_MS) {
-        const fade = Math.min(1, elapsed / 200, (SWEEP_MS - elapsed) / 300);
-        ctx.strokeStyle = `hsl(${colors.gold} / ${0.75 * fade})`;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(sweepX, 0);
-        ctx.lineTo(sweepX, height);
-        ctx.stroke();
+      // Each point shows as it lands.
+      if (animating) {
+        ctx.fillStyle = `hsl(${colors.gold})`;
+        for (let k = built - 1; k >= 0; k--) {
+          const index = order[k];
+          const age = now - landed[index];
+          if (age > DOT_MS) break;
+          const life = 1 - age / DOT_MS;
+          ctx.globalAlpha = life;
+          ctx.beginPath();
+          ctx.arc(x[index], y[index], 1.2 + 1.8 * life, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
       }
-      if (sweeping) schedule();
+      if (animating) schedule();
     };
 
     const toLocal = (event: PointerEvent) => {

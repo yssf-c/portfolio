@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { HeroMesh, type MeshStats } from "@/components/hero-mesh";
 import { LocalTime } from "@/components/local-time";
@@ -18,36 +18,14 @@ export function Hero() {
   const handleLayout = useCallback((next: Layout) => setLayout(next), []);
   const handleStats = useCallback((next: MeshStats) => setStats(next), []);
 
-  const sectionRef = useRef<HTMLElement>(null);
   // On a first visit the opening curtain is still down; hold the entrance until it lifts.
   const [intro] = useState(() =>
     typeof document !== "undefined" && document.documentElement.dataset.intro === "play" ? INTRO_MS / 1000 : 0,
   );
   const delay = (seconds: number) => (reduceMotion ? 0 : seconds + intro);
 
-  // The hero stays in place while the next section slides over it, and recedes as it is covered.
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      const away = Math.min(1, Math.max(0, window.scrollY / Math.max(1, section.offsetHeight)));
-      section.style.setProperty("--away", away.toFixed(4));
-    };
-    const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, []);
-
   return (
-    <section ref={sectionRef} className="hero-stage relative h-[100svh] min-h-[560px] overflow-hidden bg-background">
+    <section id="home" className="relative h-[100svh] min-h-[560px] overflow-hidden bg-background">
       <h1 className="sr-only">Youssef Chouay</h1>
 
       {/* YC · AY, triangulated */}

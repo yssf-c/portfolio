@@ -1,159 +1,196 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { motion, useInView, useReducedMotion } from "framer-motion";
-import { degrees, roles } from "@/lib/profile-data";
-
-const EASE = [0.55, 0.45, 0.16, 1] as const;
-const RISE = [0.16, 1, 0.3, 1] as const;
-
-const STATEMENT =
-  "I’m slowly chipping the iceberg of knowledge, hoping to make a big enough dent to make my younger self proud.";
-
-const currentRoles = roles.filter((role) => role.end === null);
-const msc = degrees.find((degree) => degree.id === "msc")!;
-
-/** The statement arrives a word at a time, each rising out of its own line. */
-function Statement() {
-  const ref = useRef<HTMLParagraphElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-12% 0px" });
-  const reduceMotion = useReducedMotion();
-
-  return (
-    <p ref={ref} className="about-statement" aria-label={STATEMENT}>
-      {STATEMENT.split(" ").map((word, index) => (
-        <span key={index} className="about-word" aria-hidden="true">
-          <motion.span
-            initial={reduceMotion ? false : { y: "110%" }}
-            animate={isInView || reduceMotion ? { y: 0 } : { y: "110%" }}
-            transition={{ duration: 0.9, delay: index * 0.028, ease: RISE }}
-          >
-            {word}
-          </motion.span>{" "}
-        </span>
-      ))}
-    </p>
-  );
-}
+import { useRef } from "react";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 
 export function About() {
   const sectionRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(titleRef, { once: true, margin: "-100px" });
 
-  // The name is written in as the section is read: --ink runs from 0 to 1 over the scroll through it.
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      const rect = section.getBoundingClientRect();
-      const height = window.innerHeight;
-      const progress = (height * 0.72 - rect.top) / Math.max(1, rect.height - height * 0.5);
-      section.style.setProperty("--ink", Math.min(1, Math.max(0, progress)).toFixed(4));
-    };
-    const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   return (
-    <section ref={sectionRef} id="about" className="about relative">
-      <div className="container relative mx-auto px-6 md:px-12">
-        <div className="grid gap-x-16 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)] xl:gap-x-24">
-          {/* يوسف شواي, written in gold as the page scrolls */}
-          <div className="about-name-stage" data-guide-skip aria-hidden="true">
-            <div className="about-name">
-              <span className="about-name-ghost">
-                <span>يوسف</span>
-                <span>شواي</span>
+    <section
+      ref={sectionRef}
+      id="about"
+      className="relative min-h-screen py-32 overflow-hidden"
+    >
+      {/* Background */}
+      <motion.div className="absolute inset-0 z-0" style={{ y: backgroundY }}>
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-[hsl(var(--wash))] to-background" />
+      </motion.div>
+
+      {/* Static noise with fade */}
+      <div
+        className="absolute inset-0 pointer-events-none z-[1]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          maskImage: `linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)`,
+          WebkitMaskImage: `linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)`,
+          opacity: 0.06,
+        }}
+      />
+
+      {/* Bottom fade overlay */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none z-[2]"
+        style={{
+          background: `linear-gradient(to bottom, transparent 0%, hsl(var(--background)) 100%)`,
+        }}
+      />
+
+      <div className="relative z-10 container mx-auto px-6 md:px-12">
+        {/* Main intro - Mason Wong style */}
+        <div ref={titleRef} className="max-w-6xl mx-auto">
+          {/* YCAY IS THE FOLIO OF */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+            transition={{ duration: 1, ease: [0.55, 0.45, 0.16, 1] }}
+            className="mb-8"
+          >
+            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+              <span className="text-4xl md:text-6xl lg:text-7xl font-light text-foreground tracking-tight">
+                YCAY
               </span>
-              <span className="about-name-ink">
-                <span>يوسف</span>
-                <span>شواي</span>
+              <span className="font-mono text-[10px] md:text-xs tracking-[0.2em] text-[hsl(var(--foreground-subtle))] uppercase">
+                [HOME]
+              </span>
+              <span className="text-2xl md:text-4xl lg:text-5xl font-light text-[hsl(var(--foreground-muted))] tracking-tight">
+                IS THE FOLIO OF
               </span>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="about-copy">
-            {/* IN「معلومات」FO */}
-            <div ref={titleRef} className="flex items-center" aria-hidden="true">
-              <motion.span
-                initial={{ opacity: 0, x: -50 }}
-                animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
-                transition={{ duration: 1, ease: EASE }}
-                className="text-section font-light text-foreground"
-              >
-                IN
-              </motion.span>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
-                className="mx-2 flex flex-col items-center md:mx-4"
-              >
-                <span className="arabic-bracket text-lg md:text-xl">「</span>
-                <span className="font-arabic text-xl text-[hsl(var(--gold))] md:text-3xl">معلومات</span>
-                <span className="arabic-bracket text-lg md:text-xl">」</span>
-              </motion.div>
-              <motion.span
-                initial={{ opacity: 0, x: 50 }}
-                animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 50 }}
-                transition={{ duration: 1, ease: EASE }}
-                className="text-section font-light text-foreground"
-              >
-                FO
-              </motion.span>
+          {/* YOUSSEF [ يوسف شواي ] CHOUAY */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+            transition={{
+              duration: 1,
+              delay: 0.1,
+              ease: [0.55, 0.45, 0.16, 1],
+            }}
+            className="mb-16"
+          >
+            <div className="flex flex-wrap items-baseline gap-x-4">
+              <span className="text-4xl md:text-6xl lg:text-7xl font-light text-foreground tracking-tight">
+                YOUSSEF
+              </span>
+              <span className="text-2xl md:text-4xl lg:text-5xl font-light text-[hsl(var(--foreground-subtle))] tracking-tight">
+                [
+              </span>
+              <span className="font-arabic text-3xl md:text-5xl lg:text-6xl text-[hsl(var(--gold))]">
+                يوسف شواي
+              </span>
+              <span className="text-2xl md:text-4xl lg:text-5xl font-light text-[hsl(var(--foreground-subtle))] tracking-tight">
+                ]
+              </span>
+              <span className="text-4xl md:text-6xl lg:text-7xl font-light text-foreground tracking-tight">
+                CHOUAY ↓
+              </span>
             </div>
-            <h2 className="sr-only">About Youssef</h2>
+          </motion.div>
 
-            <Statement />
+          {/* Divider dot */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={
+              isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }
+            }
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="flex justify-center mb-20"
+          >
+            <div className="w-2 h-2 rounded-full bg-[hsl(var(--gold))]" />
+          </motion.div>
 
-            <div className="max-w-xl space-y-6 text-lg leading-relaxed text-[hsl(var(--foreground-soft))]">
-              <p>
-                I&apos;m a software engineer and researcher with a passion for creating elegant, efficient solutions
-                to complex problems. Growing up curious about the world and my surroundings, I&apos;ve always wanted
-                to understand how they worked, and I&apos;ve kept that approach and mindset throughout my whole life.
-              </p>
-              <p>
-                Currently pursuing a Master&apos;s in Computer Science with a focus on Graph Theory, and working as a
-                software engineer at Magnet Forensics. I&apos;m constantly exploring new technologies and ways to
-                contribute.
+          {/* Role description - large typography */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+            transition={{
+              duration: 1,
+              delay: 0.4,
+              ease: [0.55, 0.45, 0.16, 1],
+            }}
+            className="max-w-5xl mx-auto mb-20"
+          >
+            <div className="text-center">
+              <h2 className="text-3xl md:text-5xl lg:text-6xl font-light text-foreground tracking-tight leading-tight mb-4">
+                SOFTWARE ENGINEER, RESEARCHER
+              </h2>
+              <div className="flex items-center justify-center gap-4 flex-wrap">
+                <span className="font-arabic text-2xl md:text-4xl text-[hsl(var(--gold))] italic">
+                  and
+                </span>
+                <span className="text-3xl md:text-5xl lg:text-6xl font-light text-foreground tracking-tight">
+                  GRAPH THEORY ENTHUSIAST
+                </span>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Bio section - two columns */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+            transition={{
+              duration: 1,
+              delay: 0.5,
+              ease: [0.55, 0.45, 0.16, 1],
+            }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-16 max-w-5xl mx-auto"
+          >
+            {/* Left column - Current role */}
+            <div>
+              <div className="mb-8">
+                <p className="font-mono text-xs tracking-[0.15em] text-[hsl(var(--foreground-muted))] uppercase">
+                  AI RESEARCHER{" "}
+                  <span className="text-[hsl(var(--gold))]">@</span> NATIONAL
+                  RESEARCH COUNCIL
+                </p>
+                <p className="font-mono text-xs tracking-[0.15em] text-[hsl(var(--foreground-subtle))] uppercase mt-1">
+                  BASED IN OTTAWA, CANADA
+                </p>
+              </div>
+
+              <p className="text-[hsl(var(--foreground-soft))] leading-relaxed">
+                I&apos;m a software engineer and researcher with a passion for
+                creating elegant, efficient solutions to complex problems.
+                Growing up curious about the world and my surroundings, I&apos;ve
+                always wanted to understand how they worked.
               </p>
             </div>
 
-            <dl className="about-facts">
-              <div>
-                <dt>Now</dt>
-                <dd>
-                  {currentRoles.map((role) => (
-                    <span key={role.id} className="block">
-                      {role.role}, <span className="text-[hsl(var(--foreground-muted))]">{role.company}</span>
-                    </span>
-                  ))}
-                </dd>
+            {/* Right column - Philosophy */}
+            <div>
+              <div className="mb-8">
+                <p className="font-mono text-xs tracking-[0.15em] text-[hsl(var(--foreground-muted))] uppercase">
+                  M.SC COMPUTER SCIENCE{" "}
+                  <span className="text-[hsl(var(--gold))]">@</span> UOTTAWA
+                </p>
+                <p className="font-mono text-xs tracking-[0.15em] text-[hsl(var(--foreground-subtle))] uppercase mt-1">
+                  FOCUS: GRAPH THEORY
+                </p>
               </div>
-              <div>
-                <dt>Studying</dt>
-                <dd>
-                  {msc.short} {msc.field}, <span className="text-[hsl(var(--foreground-muted))]">{msc.institution}</span>
-                </dd>
-              </div>
-              <div>
-                <dt>Based in</dt>
-                <dd>Ottawa, Canada</dd>
-              </div>
-            </dl>
-          </div>
+
+              <p className="text-[hsl(var(--foreground-soft))] leading-relaxed">
+                I&apos;ve kept that approach and mindset throughout my whole life and
+                I&apos;m slowly chipping the iceberg of knowledge hoping to make a
+                big enough dent to make my younger self proud. Currently
+                pursuing a Master&apos;s in Computer Science with a focus on Graph
+                Theory, and working as a software engineer at Magnet
+                Forensics. I&apos;m constantly exploring new
+                technologies and ways to contribute.
+              </p>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

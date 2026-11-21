@@ -7,6 +7,8 @@ import { ThesisFigure } from "@/components/thesis-figure";
 import { useNow } from "@/components/experience";
 import { CITATION_REVEAL_EVENT } from "@/components/citation-focus";
 import { degrees, type Degree, type YearMonth } from "@/lib/profile-data";
+import { DraftSwitch, useDraft } from "@/components/draft-switch";
+import { EducationCards, EducationRows } from "@/components/education-drafts";
 
 const msc = degrees.find((d) => d.id === "msc")!;
 const basc = degrees.find((d) => d.id === "basc")!;
@@ -143,6 +145,12 @@ function BascDetail() {
 // Section
 // ---------------------------------------------------------------------------
 
+const EDUCATION_DRAFTS = [
+  { id: "cards", label: "Diplomas" },
+  { id: "rows", label: "Index" },
+  { id: "timeline", label: "Timeline" },
+] as const;
+
 export function Education() {
   const titleRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(titleRef, { once: true, margin: "-100px" });
@@ -150,6 +158,7 @@ export function Education() {
   const now = useNow([2026, 9]);
   const nowPct = toPct(now);
   const mscProgress = progressOf(msc, now);
+  const [draft, setDraft] = useDraft("education", EDUCATION_DRAFTS, "cards");
 
   // A citation from the site guide can point at either degree.
   useEffect(() => {
@@ -212,129 +221,137 @@ export function Education() {
           </div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.8, ease: EASE }}
-        >
-          {/* Institution */}
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <Eyebrow>Institution</Eyebrow>
-              <h3 className="mt-2 text-3xl font-light text-foreground md:text-4xl">
-                {msc.institution}
-              </h3>
-            </div>
-            <div className="flex items-center gap-2 font-mono text-xs tracking-wider text-[hsl(var(--foreground-muted))]">
-              <MapPin className="h-3 w-3 text-[hsl(var(--gold))]" />
-              Ottawa, ON <span className="text-[hsl(var(--foreground-faint))]">/</span> 2020 — 2026
-            </div>
-          </div>
+        <div className="-mt-6 mb-10 flex justify-end md:-mt-12">
+          <DraftSwitch section="Education" options={EDUCATION_DRAFTS} value={draft} onChange={setDraft} />
+        </div>
 
-          {/* Ruler */}
-          <div className="relative mt-14 select-none">
-            <div className="relative h-6">
-              {Array.from({ length: 8 }, (_, i) => RULER_START + i).map((y) => (
-                <span
-                  key={y}
-                  className="absolute -translate-x-1/2 font-mono text-[11px] tracking-wider text-[hsl(var(--foreground-muted))] first:translate-x-0 last:-translate-x-full"
-                  style={{ left: `${toPct([y, 0])}%` }}
-                >
-                  {y}
-                </span>
-              ))}
+        {draft === "cards" && <EducationCards progress={mscProgress} />}
+        {draft === "rows" && <EducationRows />}
+        {draft === "timeline" && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.8, ease: EASE }}
+          >
+            {/* Institution */}
+            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <div>
+                <Eyebrow>Institution</Eyebrow>
+                <h3 className="mt-2 text-3xl font-light text-foreground md:text-4xl">
+                  {msc.institution}
+                </h3>
+              </div>
+              <div className="flex items-center gap-2 font-mono text-xs tracking-wider text-[hsl(var(--foreground-muted))]">
+                <MapPin className="h-3 w-3 text-[hsl(var(--gold))]" />
+                Ottawa, ON <span className="text-[hsl(var(--foreground-faint))]">/</span> 2020 — 2026
+              </div>
             </div>
 
-            <div className="relative h-4 border-b border-border">
-              {Array.from({ length: RULER_MONTHS + 1 }, (_, i) => (
-                <span
-                  key={i}
-                  className={`absolute bottom-0 w-px ${
-                    i % 12 === 0
-                      ? "h-4 bg-[hsl(var(--foreground-subtle))]"
-                      : i % 3 === 0
-                        ? "h-2 bg-[hsl(var(--foreground-faint))]"
-                        : "h-1 bg-border"
-                  }`}
-                  style={{ left: `${(i / RULER_MONTHS) * 100}%` }}
-                />
-              ))}
-            </div>
-
-            <div className="relative mt-5 h-14">
-              {degrees.map((d) => {
-                const left = toPct(d.start);
-                const width = toPct(d.end) - left;
-                const isActive = active === d.id;
-                const progress = progressOf(d, now) * 100;
-                return (
-                  <button
-                    key={d.id}
-                    type="button"
-                    onClick={() => setActive(d.id)}
-                    onMouseEnter={() => setActive(d.id)}
-                    aria-pressed={isActive}
-                    className={`absolute inset-y-0 overflow-hidden border text-left transition-all duration-500 ${
-                      isActive
-                        ? "border-[hsl(var(--gold))]"
-                        : "border-border opacity-60 hover:opacity-90"
-                    }`}
-                    style={{
-                      left: `calc(${left}% + 2px)`,
-                      width: `calc(${width}% - 4px)`,
-                      background: `linear-gradient(to right, hsl(var(--gold) / ${isActive ? 1 : 0.35}) ${progress}%, transparent ${progress}%), repeating-linear-gradient(135deg, hsl(var(--gold) / 0.25) 0 1px, transparent 1px 7px)`,
-                    }}
+            {/* Ruler */}
+            <div className="relative mt-14 select-none">
+              <div className="relative h-6">
+                {Array.from({ length: 8 }, (_, i) => RULER_START + i).map((y) => (
+                  <span
+                    key={y}
+                    className="absolute -translate-x-1/2 font-mono text-[11px] tracking-wider text-[hsl(var(--foreground-muted))] first:translate-x-0 last:-translate-x-full"
+                    style={{ left: `${toPct([y, 0])}%` }}
                   >
-                    <span
-                      className={`absolute left-3 top-1/2 -translate-y-1/2 whitespace-nowrap font-mono text-[11px] uppercase tracking-[0.16em] md:left-4 ${
-                        isActive ? "text-background" : "text-foreground"
-                      }`}
-                    >
-                      {d.short} <span className="hidden sm:inline">· {d.field}</span>
-                    </span>
-                  </button>
-                );
-              })}
+                    {y}
+                  </span>
+                ))}
+              </div>
 
-              {/* Now marker */}
-              <div
-                className="pointer-events-none absolute -bottom-3 -top-[3.25rem] w-px bg-foreground"
-                style={{ left: `${nowPct}%` }}
-              >
-                <span className="absolute -top-1 left-1/2 flex h-2 w-2 -translate-x-1/2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foreground opacity-60" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-foreground" />
+              <div className="relative h-4 border-b border-border">
+                {Array.from({ length: RULER_MONTHS + 1 }, (_, i) => (
+                  <span
+                    key={i}
+                    className={`absolute bottom-0 w-px ${
+                      i % 12 === 0
+                        ? "h-4 bg-[hsl(var(--foreground-subtle))]"
+                        : i % 3 === 0
+                          ? "h-2 bg-[hsl(var(--foreground-faint))]"
+                          : "h-1 bg-border"
+                    }`}
+                    style={{ left: `${(i / RULER_MONTHS) * 100}%` }}
+                  />
+                ))}
+              </div>
+
+              <div className="relative mt-5 h-14">
+                {degrees.map((d) => {
+                  const left = toPct(d.start);
+                  const width = toPct(d.end) - left;
+                  const isActive = active === d.id;
+                  const progress = progressOf(d, now) * 100;
+                  return (
+                    <button
+                      key={d.id}
+                      type="button"
+                      onClick={() => setActive(d.id)}
+                      onMouseEnter={() => setActive(d.id)}
+                      aria-pressed={isActive}
+                      className={`absolute inset-y-0 overflow-hidden border text-left transition-all duration-500 ${
+                        isActive
+                          ? "border-[hsl(var(--gold))]"
+                          : "border-border opacity-60 hover:opacity-90"
+                      }`}
+                      style={{
+                        left: `calc(${left}% + 2px)`,
+                        width: `calc(${width}% - 4px)`,
+                        background: `linear-gradient(to right, hsl(var(--gold) / ${isActive ? 1 : 0.35}) ${progress}%, transparent ${progress}%), repeating-linear-gradient(135deg, hsl(var(--gold) / 0.25) 0 1px, transparent 1px 7px)`,
+                      }}
+                    >
+                      <span
+                        className={`absolute left-3 top-1/2 -translate-y-1/2 whitespace-nowrap font-mono text-[11px] uppercase tracking-[0.16em] md:left-4 ${
+                          isActive ? "text-background" : "text-foreground"
+                        }`}
+                      >
+                        {d.short} <span className="hidden sm:inline">· {d.field}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+
+                {/* Now marker */}
+                <div
+                  className="pointer-events-none absolute -bottom-3 -top-[3.25rem] w-px bg-foreground"
+                  style={{ left: `${nowPct}%` }}
+                >
+                  <span className="absolute -top-1 left-1/2 flex h-2 w-2 -translate-x-1/2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foreground opacity-60" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-foreground" />
+                  </span>
+                </div>
+              </div>
+              <div className="relative mt-5 h-4">
+                <span
+                  className="absolute -translate-x-full pr-2 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground"
+                  style={{ left: `${nowPct}%` }}
+                >
+                  Now
                 </span>
               </div>
             </div>
-            <div className="relative mt-5 h-4">
-              <span
-                className="absolute -translate-x-full pr-2 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground"
-                style={{ left: `${nowPct}%` }}
-              >
-                Now
-              </span>
-            </div>
-          </div>
 
-          {/* Detail */}
-          <div className="mt-14 border-t border-border pt-12">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={active}
-                id={`education-${active}`}
-                className="scroll-mt-28"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.35 }}
-              >
-                {active === "msc" ? <MscSpotlight progress={mscProgress} /> : <BascDetail />}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </motion.div>
+            {/* Detail */}
+            <div className="mt-14 border-t border-border pt-12">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={active}
+                  id={`education-${active}`}
+                  className="scroll-mt-28"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.35 }}
+                >
+                  {active === "msc" ? <MscSpotlight progress={mscProgress} /> : <BascDetail />}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
       </div>
     </section>
   );

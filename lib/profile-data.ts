@@ -175,6 +175,7 @@ export type Degree = {
   thesis?: string;
   supervisor?: string;
   funding?: { amount: string; label: string };
+  gpa?: string;
   coursework?: { name: string; area: string }[];
 };
 
@@ -189,6 +190,7 @@ export const degrees: Degree[] = [
     status: "Conferred",
     start: [2020, 8],
     end: [2025, 0],
+    gpa: "9.0 / 10",
     coursework: [
       { name: "Data Structures & Algorithms", area: "Theory" },
       { name: "Discrete Mathematics", area: "Theory" },

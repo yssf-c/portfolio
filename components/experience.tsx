@@ -2,7 +2,8 @@
 
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Plus } from "lucide-react";
+import { CITATION_REVEAL_EVENT } from "@/components/citation-focus";
 import { roles, type Role, type YearMonth } from "@/lib/profile-data";
 
 const RULER_START = 2022;
@@ -195,12 +196,84 @@ function Stack({ items }: { items: string[] }) {
       {items.map((t) => (
         <li
           key={t}
-          className="border border-border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-[hsl(var(--foreground-soft))]"
+          className="rounded-full border border-border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-[hsl(var(--foreground-soft))]"
         >
           {t}
         </li>
       ))}
     </ul>
+  );
+}
+
+/** The headline number of a role, counted up the first time it is seen. */
+function Metric({ metric }: { metric: NonNullable<Role["metric"]> }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-12% 0px" });
+  const match = metric.value.match(/^(\D*)(\d+)(.*)$/);
+  const target = match ? Number(match[2]) : 0;
+  const [shown, setShown] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!isInView || !match || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let frame = 0;
+    const started = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - started) / 1100);
+      setShown(Math.round(target * (1 - (1 - t) ** 3)));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+    // The value is fixed data; only coming into view starts the count.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInView]);
+
+  return (
+    <div ref={ref} className="xp-metric">
+      <div className="xp-metric-value" aria-label={metric.value}>
+        {match && shown !== null ? `${match[1]}${shown}${match[3]}` : metric.value}
+      </div>
+      <Eyebrow className="mt-2 block text-[10px]">{metric.label}</Eyebrow>
+    </div>
+  );
+}
+
+/** What was done in a role, folded away until asked for (or cited by the site guide). */
+function RoleDetails({ role }: { role: Role }) {
+  const [open, setOpen] = useState(false);
+  const count = role.groups.reduce((total, group) => total + group.bullets.length, 0);
+
+  useEffect(() => {
+    const reveal = (event: Event) => {
+      if ((event as CustomEvent<{ id: string }>).detail?.id === `xp-${role.id}`) setOpen(true);
+    };
+    window.addEventListener(CITATION_REVEAL_EVENT, reveal);
+    return () => window.removeEventListener(CITATION_REVEAL_EVENT, reveal);
+  }, [role.id]);
+
+  return (
+    <div className="xp-details" data-open={open ? "" : undefined}>
+      <button
+        type="button"
+        className="xp-details-toggle"
+        aria-expanded={open}
+        aria-controls={`xp-details-${role.id}`}
+        onClick={() => setOpen(!open)}
+      >
+        <span className="xp-details-plus">
+          <Plus aria-hidden="true" />
+        </span>
+        <span>{open ? "Hide the details" : "What I did"}</span>
+        {!open && <span className="xp-details-count">{String(count).padStart(2, "0")}</span>}
+      </button>
+      <div id={`xp-details-${role.id}`} className="xp-details-body" inert={!open}>
+        <div>
+          <div className="max-w-2xl pt-8">
+            <Bullets role={role} />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -413,14 +486,23 @@ function IndexReader() {
               ref={(el) => {
                 refs.current[r.id] = el;
               }}
-              className="scroll-mt-48 border-t border-border py-14 first-of-type:border-t-0 first-of-type:pt-0 md:scroll-mt-28"
+              data-active={active === r.id ? "" : undefined}
+              className="xp-role scroll-mt-48 py-12 md:scroll-mt-28 md:py-14"
             >
               <div className="flex items-start justify-between gap-6">
                 <div>
-                  <Eyebrow>
-                    {String(i + 1).padStart(2, "0")} · {r.period}
-                  </Eyebrow>
-                  <h3 className="mt-4 text-3xl font-light leading-tight text-foreground md:text-4xl">
+                  <span className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <Eyebrow>
+                      {String(i + 1).padStart(2, "0")} · {r.period}
+                    </Eyebrow>
+                    {!r.end && (
+                      <span className="xp-now">
+                        <LiveDot />
+                        Now
+                      </span>
+                    )}
+                  </span>
+                  <h3 className="mt-4 text-3xl font-light leading-[1.05] tracking-[-0.02em] text-foreground md:text-5xl">
                     {r.role}
                   </h3>
                   <p className="mt-2 text-[hsl(var(--foreground-soft))]">
@@ -434,29 +516,18 @@ function IndexReader() {
                     )}
                   </p>
                 </div>
-                {r.metric && (
-                  <div className="hidden shrink-0 text-right sm:block">
-                    <div className="text-4xl font-light tracking-tight text-[hsl(var(--gold))]">
-                      {r.metric.value}
-                    </div>
-                    <Eyebrow className="mt-1 block text-[10px]">{r.metric.label}</Eyebrow>
-                  </div>
-                )}
+                {r.metric && <Metric metric={r.metric} />}
               </div>
 
               <p className="mt-8 max-w-2xl text-lg font-light text-[hsl(var(--foreground-soft))]">
                 {r.summary}
               </p>
-              {r.groups.length > 0 && (
-                <div className="mt-8 max-w-2xl">
-                  <Bullets role={r} />
-                </div>
-              )}
               {r.stack.length > 0 && (
                 <div className="mt-8">
                   <Stack items={r.stack} />
                 </div>
               )}
+              {r.groups.length > 0 && <RoleDetails role={r} />}
             </article>
           ))}
         </div>

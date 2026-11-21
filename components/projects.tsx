@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -8,6 +8,7 @@ import { PrismFallback } from "@/components/prism-fallback";
 import Image from "next/image";
 import Link from "next/link";
 import { projects, type ProjectDetail } from "@/lib/project-data";
+import { DraftSwitch, useDraft } from "@/components/draft-switch";
 import {
   getProjectSignature,
   hasProjectSignatureTransition,
@@ -197,6 +198,92 @@ const DEVICE_SHARE: Record<HoverPreview["device"], number> = {
 const NEUTRAL_CARD = { bg: "hsl(var(--card))", fg: "hsl(var(--foreground))", accent: "hsl(var(--gold))", font: "inherit" };
 
 /**
+ * Sizes a device to the box it sits in. A poster gives it a share of its
+ * width, capped by a share of its height; `fill` overrides both shares.
+ */
+function fitDevice(card: HTMLElement, device: HTMLElement, fill?: { wide: number; tall: number }) {
+  const kind = (device.dataset.device ?? "mac") as HoverPreview["device"];
+  const narrow = card.offsetWidth < 560;
+  if (!fill) card.dataset.narrow = String(narrow);
+  const wide = fill?.wide ?? (narrow ? Math.min(0.82, DEVICE_SHARE[kind] * 1.6) : DEVICE_SHARE[kind]);
+  const tall = fill?.tall ?? (narrow ? 0.4 : 0.56);
+  const inner = device.firstElementChild as HTMLElement;
+  const scale = Math.min(
+    (card.offsetWidth * wide) / (inner.offsetWidth || 1),
+    (card.offsetHeight * tall) / (inner.offsetHeight || 1),
+  );
+  device.style.setProperty("--scale", scale.toFixed(4));
+}
+
+/** A project's colours and typeface, as CSS variables for a poster or a row. */
+function projectLook(project: ProjectDetail) {
+  const signature = getProjectSignature(project.id);
+  const look = signature ?? NEUTRAL_CARD;
+  const title = signature?.title ?? project.title;
+  // Short names of two words stay on one line; the size follows whichever is wider, the line or the longest word.
+  const oneLine = title.length <= 14;
+  const longest = Math.max(...title.split(" ").map((word) => word.length), oneLine ? Math.ceil(title.length * 0.75) : 0);
+  return {
+    title,
+    oneLine,
+    line: signature?.line ?? project.category,
+    style: {
+      "--card-bg": look.bg,
+      "--card-fg": look.fg,
+      "--card-accent": look.accent,
+      "--card-font": look.font,
+      "--chars": Math.max(5, longest),
+    } as React.CSSProperties,
+  };
+}
+
+/** Opens a case study through its signature transition, unless the click is meant for a new tab. */
+function openProject(event: React.MouseEvent<HTMLAnchorElement>, project: ProjectDetail) {
+  const isModifiedNavigation = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0;
+  if (isModifiedNavigation || !hasProjectSignatureTransition(project.id)) return;
+  event.preventDefault();
+  startProjectSignatureTransition(project.id, `/projects/${project.id}`);
+}
+
+/** One project as a poster in its own colour and typeface (the ones its case study opens on). */
+function Poster({ project, onFocusVisible }: { project: ProjectDetail; onFocusVisible?: () => void }) {
+  const look = projectLook(project);
+  return (
+    <Link
+      href={`/projects/${project.id}`}
+      data-card
+      className="reel-card"
+      style={look.style}
+      onClick={(event) => openProject(event, project)}
+      onFocus={(event) => event.currentTarget.matches(":focus-visible") && onFocusVisible?.()}
+    >
+      <div className="reel-card-top">
+        <span>{project.category}</span>
+        {project.timeline && project.timeline !== "Recent" && <span>{project.timeline}</span>}
+      </div>
+
+      <div data-device={project.hoverPreview?.device ?? "mac"} className="reel-card-device" data-guide-skip aria-hidden="true">
+        <div>
+          <ProjectDevice project={project} />
+        </div>
+      </div>
+
+      <div className="reel-card-name">
+        <h3 className={`reel-card-title ${look.oneLine ? "whitespace-nowrap" : ""}`}>{look.title}</h3>
+        <p className="reel-card-line">{look.line}</p>
+      </div>
+
+      <span className="reel-card-open">
+        <span>Open case study</span>
+        <span className="reel-card-arrow">
+          <ArrowUpRight aria-hidden="true" />
+        </span>
+      </span>
+    </Link>
+  );
+}
+
+/**
  * The projects as a reel of posters, each in its own colour and typeface (the
  * same ones its case study opens on). On wide screens the reel is pinned and
  * scrolling the page slides it sideways; otherwise it is swiped.
@@ -257,20 +344,7 @@ function WorkReel() {
     };
 
     const layout = () => {
-      cards.forEach((card, index) => {
-        const device = devices[index];
-        const kind = (device.dataset.device ?? "mac") as HoverPreview["device"];
-        const narrow = card.offsetWidth < 560;
-        card.dataset.narrow = String(narrow);
-        const share = narrow ? Math.min(0.82, DEVICE_SHARE[kind] * 1.6) : DEVICE_SHARE[kind];
-        const tallest = narrow ? 0.4 : 0.56;
-        const inner = device.firstElementChild as HTMLElement;
-        const scale = Math.min(
-          (card.offsetWidth * share) / (inner.offsetWidth || 1),
-          (card.offsetHeight * tallest) / (inner.offsetHeight || 1),
-        );
-        device.style.setProperty("--scale", scale.toFixed(4));
-      });
+      cards.forEach((card, index) => fitDevice(card, devices[index]));
       if (pinnedQuery.matches) {
         travel = Math.max(0, track.offsetWidth - window.innerWidth);
         reel.style.height = `${window.innerHeight + travel}px`;
@@ -311,72 +385,13 @@ function WorkReel() {
     if (Math.abs(window.scrollY - (top + wanted)) > 4) window.scrollTo({ top: top + wanted });
   };
 
-  const handleClick = (event: React.MouseEvent<HTMLAnchorElement>, project: ProjectDetail) => {
-    const isModifiedNavigation = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0;
-    if (isModifiedNavigation || !hasProjectSignatureTransition(project.id)) return;
-    event.preventDefault();
-    startProjectSignatureTransition(project.id, `/projects/${project.id}`);
-  };
-
   return (
     <div ref={reelRef} className="reel">
       <div className="reel-stage">
         <div ref={trackRef} className="reel-track">
-          {projects.map((project, index) => {
-            const signature = getProjectSignature(project.id);
-            const look = signature ?? NEUTRAL_CARD;
-            const title = signature?.title ?? project.title;
-            // Short names of two words stay on one line; the size follows whichever is wider, the line or the longest word.
-            const oneLine = title.length <= 14;
-            const longest = Math.max(...title.split(" ").map((word) => word.length), oneLine ? Math.ceil(title.length * 0.75) : 0);
-            return (
-              <Link
-                key={project.id}
-                href={`/projects/${project.id}`}
-                data-card
-                className="reel-card"
-                style={
-                  {
-                    "--card-bg": look.bg,
-                    "--card-fg": look.fg,
-                    "--card-accent": look.accent,
-                    "--card-font": look.font,
-                    "--chars": Math.max(5, longest),
-                  } as React.CSSProperties
-                }
-                onClick={(event) => handleClick(event, project)}
-                onFocus={(event) => event.currentTarget.matches(":focus-visible") && bringIntoView(index)}
-              >
-                <div className="reel-card-top">
-                  <span>{project.category}</span>
-                  {project.timeline && project.timeline !== "Recent" && <span>{project.timeline}</span>}
-                </div>
-
-                <div
-                  data-device={project.hoverPreview?.device ?? "mac"}
-                  className="reel-card-device"
-                  data-guide-skip
-                  aria-hidden="true"
-                >
-                  <div>
-                    <ProjectDevice project={project} />
-                  </div>
-                </div>
-
-                <div className="reel-card-name">
-                  <h3 className={`reel-card-title ${oneLine ? "whitespace-nowrap" : ""}`}>{title}</h3>
-                  <p className="reel-card-line">{signature?.line ?? project.category}</p>
-                </div>
-
-                <span className="reel-card-open">
-                  <span>Open case study</span>
-                  <span className="reel-card-arrow">
-                    <ArrowUpRight aria-hidden="true" />
-                  </span>
-                </span>
-              </Link>
-            );
-          })}
+          {projects.map((project, index) => (
+            <Poster key={project.id} project={project} onFocusVisible={() => bringIntoView(index)} />
+          ))}
         </div>
 
         <div className="reel-meter container mx-auto px-6 md:px-12" data-guide-skip aria-hidden="true">
@@ -393,11 +408,179 @@ function WorkReel() {
   );
 }
 
+/**
+ * The same posters as a deck: each one sticks near the top of the screen and
+ * the next slides up over it, the covered one sinking back a little.
+ */
+function WorkStack() {
+  const stackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const stack = stackRef.current;
+    if (!stack) return;
+    const cards = [...stack.querySelectorAll<HTMLElement>("[data-card]")];
+    const devices = cards.map((card) => card.querySelector<HTMLElement>("[data-device]")!);
+    let frame = 0;
+
+    const update = () => {
+      frame = 0;
+      cards.forEach((card, index) => {
+        const next = cards[index + 1];
+        if (!next) return;
+        // 0 while the next poster is still below this one, 1 once it sits on top.
+        const gap = next.parentElement!.getBoundingClientRect().top - card.parentElement!.getBoundingClientRect().top;
+        const cover = Math.min(1, Math.max(0, 1 - gap / card.offsetHeight));
+        card.style.setProperty("--cover", cover.toFixed(4));
+      });
+    };
+    const requestUpdate = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    const layout = () => {
+      cards.forEach((card, index) => fitDevice(card, devices[index]));
+      update();
+    };
+
+    const resize = new ResizeObserver(layout);
+    resize.observe(stack);
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    layout();
+    return () => {
+      cancelAnimationFrame(frame);
+      resize.disconnect();
+      window.removeEventListener("scroll", requestUpdate);
+    };
+  }, []);
+
+  return (
+    <div ref={stackRef} className="work-stack container mx-auto px-6 md:px-12">
+      {projects.map((project, index) => (
+        <div key={project.id} className="work-stack-slot" style={{ "--i": index } as React.CSSProperties}>
+          <Poster project={project} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The projects as an index of names, each set in its own typeface. Pointing
+ * at a row floods it with the project's colour and brings its screen up
+ * beside the pointer.
+ */
+function WorkIndex() {
+  const listRef = useRef<HTMLDivElement>(null);
+  const floatRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState<number | null>(null);
+
+  useEffect(() => {
+    const list = listRef.current;
+    const float = floatRef.current;
+    if (!list || !float) return;
+    const tiles = [...float.querySelectorAll<HTMLElement>("[data-tile]")];
+    const fit = () =>
+      tiles.forEach((tile) => fitDevice(tile, tile.querySelector<HTMLElement>("[data-device]")!, { wide: 0.8, tall: 0.76 }));
+    fit();
+    const resize = new ResizeObserver(fit);
+    resize.observe(float);
+
+    // The preview trails the pointer.
+    let frame = 0;
+    let x = 0, y = 0, tx = 0, ty = 0;
+    let placed = false;
+    const tick = () => {
+      x += (tx - x) * 0.14;
+      y += (ty - y) * 0.14;
+      float.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+      frame = Math.abs(tx - x) + Math.abs(ty - y) > 0.3 ? requestAnimationFrame(tick) : 0;
+    };
+    const onMove = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse") return;
+      const rect = list.getBoundingClientRect();
+      // Keep it on the side of the pointer that has room.
+      const side = event.clientX > window.innerWidth * 0.62 ? -float.offsetWidth - 28 : 28;
+      tx = event.clientX - rect.left + side;
+      ty = event.clientY - rect.top - float.offsetHeight / 2;
+      if (!placed) {
+        placed = true;
+        x = tx;
+        y = ty;
+      }
+      if (!frame) frame = requestAnimationFrame(tick);
+    };
+    list.addEventListener("pointermove", onMove);
+    return () => {
+      cancelAnimationFrame(frame);
+      resize.disconnect();
+      list.removeEventListener("pointermove", onMove);
+    };
+  }, []);
+
+  return (
+    <div className="container mx-auto px-6 md:px-12">
+      <div ref={listRef} className="work-index" onPointerLeave={() => setActive(null)}>
+        {projects.map((project, index) => {
+          const look = projectLook(project);
+          return (
+            <Link
+              key={project.id}
+              href={`/projects/${project.id}`}
+              className="work-index-row"
+              style={look.style}
+              data-active={active === index ? "" : undefined}
+              onClick={(event) => openProject(event, project)}
+              onPointerEnter={(event) => event.pointerType === "mouse" && setActive(index)}
+              onFocus={() => setActive(index)}
+              onBlur={() => setActive(null)}
+            >
+              <span className="work-index-number">{String(index + 1).padStart(2, "0")}</span>
+              <h3 className="work-index-title">{look.title}</h3>
+              <span className="work-index-meta">
+                <span>{project.category}</span>
+                {project.timeline && project.timeline !== "Recent" && <span>{project.timeline}</span>}
+              </span>
+              <span className="work-index-arrow">
+                <ArrowUpRight aria-hidden="true" />
+              </span>
+            </Link>
+          );
+        })}
+
+        {/* The screen of whichever project is pointed at */}
+        <div ref={floatRef} className="work-index-float" data-show={active !== null ? "" : undefined} data-guide-skip aria-hidden="true">
+          {projects.map((project, index) => (
+            <div
+              key={project.id}
+              data-tile
+              className="work-index-tile"
+              data-on={active === index ? "" : undefined}
+              style={projectLook(project).style}
+            >
+              <div data-device={project.hoverPreview?.device ?? "mac"} className="work-index-device">
+                <div>
+                  <ProjectDevice project={project} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const WORK_DRAFTS = [
+  { id: "stack", label: "Stack" },
+  { id: "index", label: "Index" },
+  { id: "reel", label: "Reel" },
+] as const;
+
 export function Projects() {
   const reduceMotion = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
   const shouldLoadPrism = useInView(sectionRef, { once: true, margin: "300px" });
+  const [draft, setDraft] = useDraft("work", WORK_DRAFTS, "stack");
 
   return (
     <section ref={sectionRef} id="work" className="relative overflow-x-clip bg-background py-16 md:py-24 noise-bg">
@@ -438,7 +621,11 @@ export function Projects() {
 
       </div>
 
-      <WorkReel />
+      <div className="relative z-10 container mx-auto mt-14 flex justify-end px-6 md:px-12">
+        <DraftSwitch section="Work" options={WORK_DRAFTS} value={draft} onChange={setDraft} />
+      </div>
+
+      {draft === "stack" ? <WorkStack /> : draft === "index" ? <WorkIndex /> : <WorkReel />}
 
       <div className="relative z-10 container mx-auto px-6 md:px-12">
         <div className="mt-10 flex items-center justify-between">
