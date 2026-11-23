@@ -119,7 +119,7 @@ type Sheet = {
 };
 
 /** The four offices that sign a diploma, in the corners they sign in. */
-const OFFICES = ["Chancellor", "Dean", "President and Vice-Chancellor", "Vice-President (Int.), Governance"];
+const OFFICES = ["Chancellor", "Dean", "President and Vice-Chancellor", "Secretary-General"];
 
 /**
  * A degree set out as the University of Ottawa's parchment: its two names in
