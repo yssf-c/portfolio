@@ -2151,7 +2151,7 @@ html[data-intro="play"] .preloader {
 }
 
 .diploma-wordmark + .diploma-arms + .diploma-wordmark {
-  width: calc(var(--u) * 32.25);
+  width: calc(var(--u) * 32);
 }
 
 .diploma-arms {
@@ -2264,6 +2264,10 @@ html[data-intro="play"] .preloader {
     drop-shadow(0.5px 0.6px 0 rgb(255 255 255 / 0.95));
 }
 
+.diploma-seal:not([data-pending]) {
+  opacity: 0.86;
+}
+
 /* Not conferred yet: the outline of the seal, and a gold rule as complete as the degree. */
 .diploma-seal-edge {
   fill: rgb(var(--foil) / 0.07);
@@ -2367,21 +2371,21 @@ html[data-intro="play"] .preloader {
 
   .diploma-wordmark {
     position: absolute;
-    top: calc(var(--u) * 2.28);
-    left: calc(var(--u) * 13.66);
-    width: calc(var(--u) * 26.02);
+    top: calc(var(--u) * 2.29);
+    left: calc(var(--u) * 13.58);
+    width: calc(var(--u) * 26.28);
   }
 
   .diploma-wordmark + .diploma-arms + .diploma-wordmark {
-    left: calc(var(--u) * 60.81);
-    width: calc(var(--u) * 27.97);
+    left: calc(var(--u) * 60.71);
+    width: calc(var(--u) * 28.03);
   }
 
   .diploma-arms {
     position: absolute;
-    top: calc(var(--u) * 1.92);
-    left: calc(var(--u) * 43.1);
-    width: calc(var(--u) * 14.05);
+    top: calc(var(--u) * 2.11);
+    left: calc(var(--u) * 42.74);
+    width: calc(var(--u) * 14.93);
   }
 
   .diploma-line,

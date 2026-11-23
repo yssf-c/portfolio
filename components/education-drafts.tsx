@@ -119,7 +119,7 @@ function Seal({ id, progress }: { id: string; progress?: number }) {
                 UNIVERSITY OF OTTAWA
               </textPath>
             </text>
-            <image className="diploma-seal-arms" href="/education/uottawa-arms.svg" x="31" y="28" width="78" height="79.7" />
+            <image className="diploma-seal-arms" href="/education/uottawa-arms.svg" x="28" y="30" width="84" height="81.2" />
           </>
         )}
       </svg>
@@ -161,17 +161,17 @@ function Diploma({ sheet }: { sheet: Sheet }) {
               lang="fr"
               src="/education/uottawa-name-fr.svg"
               alt="Université d’Ottawa"
-              width={160}
-              height={60}
+              width={194}
+              height={74}
               unoptimized
             />
-            <Image className="diploma-arms" src="/education/uottawa-arms.svg" alt="" width={186} height={190} unoptimized />
+            <Image className="diploma-arms" src="/education/uottawa-arms.svg" alt="" width={178} height={172} unoptimized />
             <Image
               className="diploma-wordmark"
               src="/education/uottawa-name-en.svg"
               alt="University of Ottawa"
-              width={172}
-              height={68}
+              width={207}
+              height={78}
               unoptimized
             />
           </header>
