@@ -3,13 +3,35 @@
   <defs>
     <clipPath id="sh"><path d="M86,66 H148 V121 C148,138 133,148 117,156 C101,148 86,138 86,121 Z"/></clipPath>
     <path id="esc" d="M-4.200,-4.800 H4.200 V0.800 C4.200,3.600 2.200,5.200 0,6.400 C-2.200,5.200 -4.200,3.600 -4.200,0.800 Z"/>
-    <g id="horse">
-      <path transform="translate(0 -7)" fill="#d29c8d" stroke="#8a4a44" stroke-width="0.6" stroke-linejoin="round" d="M9,42 C3,44 -2,52 -1,62 C0,69 3,72 6,70 C3,66 4,60 7,56 C8,52 9,48 11,46 Z"/>
-      <path fill="#fbfaf5" stroke="#55664f" stroke-width="1" stroke-linejoin="round" d="M33.500,1 L37,6.500 C41,9 44.500,11.500 45.500,15 C45.800,17.500 44,19 42,18.500 C40.500,18.200 39.500,17.200 38.500,17.500 C37.500,20.500 37,24 37.500,27 L44,25.500 L49,29.500 L50,35 L47,35.500 L46,32 L42.500,30.500 L37.500,32.500 L43,37.500 L47,42 L47,47.500 L44,47.500 L43,43.500 L38,41 C36,41 34,41.500 33,43.500 C31,49 28.500,53 25.500,56 L29,62.500 L30,70 L32.500,76.500 L28,77.500 L26,71 L22.500,64.500 L19.500,61 L17,66.500 L20,74 L22,79.500 L16.500,79.500 L14,72 L11.500,65 C9,60 8,53 9.500,47 C10.500,41 14,32 20,25 C24,17 28,10 32,6.500 Z"/>
-      <path fill="#a9654b" stroke="#6e3a30" stroke-width="0.6" stroke-linejoin="round" d="M33.500,1 L32,6.500 C28,10 24,17 20,25 C17.500,21 18.500,16 21.500,13.500 C20.500,11 22.500,8 25.500,7 C26.500,4.500 29.500,2 33.500,1 Z"/>
-      <path fill="none" stroke="#4b4f9c" stroke-width="2.600" stroke-linecap="round" d="M25.500,16.500 q3.500,0.600 5.500,3.200 t6.300,4.600"/>
-      <path fill="#c9925c" stroke="#7d4a3a" stroke-width="0.4" d="M47,35.500 L50,35 L50.300,37.200 L47.300,37.600 Z M44,47.500 H47 V49.700 H44 Z M28,77.500 L32.500,76.500 L33,79 L28.500,80 Z M16.500,79.500 H22 V82 H16.500 Z"/>
-      <circle cx="40.200" cy="11.600" r="0.8" fill="#333"/>
+    <g id="horse" stroke-linejoin="round" stroke-linecap="round">
+      <!-- tail -->
+      <path fill="#d29c8d" stroke="#8a4a44" stroke-width="1.100" d="M28,112 C23,108 20,100 21,92 C22,84 16,80 13,86 C10,92 14,100 14,110 C14,122 12,130 11,138 C17,132 22,124 24,116 Z"/>
+      <path fill="none" stroke="#8a4a44" stroke-width="0.700" d="M17,88 C16,98 19,110 16,126 M20,100 C20,106 21,112 20,118"/>
+      <!-- far legs -->
+      <path fill="#ecebe2" stroke="#4c5d49" stroke-width="1.900" d="M50,126 C57,131 62,137 62,145 L60,153 C64,158 69,162 73,166 L80,173 L79,180 L66,180 L65,173 C60,168 54,162 51,156 C48,148 47,140 44,132 Z"/>
+      <path fill="#ecebe2" stroke="#4c5d49" stroke-width="1.900" d="M77,66 C83,60 91,55 98,54 C101,54 103,55 104,58 L110,67 L112,73 L106,75 L104,70 L99,63 C93,64 87,70 82,78 Z"/>
+      <!-- body, neck and head -->
+      <path fill="#fbfaf5" stroke="#4c5d49" stroke-width="1.900" d="M46,19 C38,20 31,27 30,37 C29,46 34,54 42,60 C37,70 32,84 28,98 C25,106 23,114 23,122 C22,132 26,141 34,145 C43,148 51,142 56,133 C60,124 64,112 70,100 C76,96 82,90 84,82 C86,75 84,68 81,62 C76,58 68,58 63,52 C61,49 60,46 60,43 C63,43 66,45 68,47 L72,48.500 C76,49.500 79,47 79,43 C79,40.500 78,38.500 76,36.500 C71,30 65,23 58,17 L58,6 L52,15 C50,16 48,17 46,19 Z"/>
+      <!-- near legs -->
+      <path fill="#fbfaf5" stroke="#4c5d49" stroke-width="1.900" d="M27,112 C22,120 21,132 25,142 L21,154 C19,157 20,160 22,162 C25,166 27,169 28,171 L25,175 L26,180 L40,180 L40,176 L35,170 C33,165 32,160 32,156 C38,152 45,146 50,138 C53,130 50,120 44,114 Z"/>
+      <path fill="#fbfaf5" stroke="#4c5d49" stroke-width="1.900" d="M68,86 C76,85 85,86 92,89 C95,90 97,93 96,96 L95,108 L93,117 L86,116 L88,108 L88,98 C81,97 74,98 67,100 Z"/>
+      <!-- hide the joins where the near legs meet the body -->
+      <path fill="#fbfaf5" d="M29,113 C33,109 40,110 43,115 C42,123 35,125 29,122 Z M68.500,87.300 C71,87 73,86.800 75,86.800 L74.500,97.300 L68.500,98.500 Z"/>
+      <path fill="#ecebe2" stroke="#4c5d49" stroke-width="1.200" d="M48.500,17.500 L49.500,8 L54.500,14.500 Z"/>
+      <!-- mane and forelock -->
+      <path fill="#a9654b" stroke="#6e3a30" stroke-width="1" d="M50,15 C40,12 29,17 25,27 C20,29 18,35 21,40 C17,44 18,51 23,54 C22,58 25,64 31,66 C34,63 38,61 42,60 C34,54 29,46 30,37 C31,27 38,20 46,19 Z"/>
+      <path fill="none" stroke="#6e3a30" stroke-width="0.700" d="M25,27 C27,30 27,34 25,38 M21,40 C24,43 25,48 23,53 M36,19 C33,23 31,27 30,31"/>
+      <path fill="#a9654b" stroke="#6e3a30" stroke-width="0.800" d="M53,14 C57,16 60,20 60,25 C56,23 53,20 51,16 Z"/>
+      <!-- collar -->
+      <path fill="none" stroke="#423f8c" stroke-width="5" stroke-linecap="butt" d="M29.500,43.500 q6,-2 11,3 t11,3 t14.500,7"/>
+      <!-- hooves -->
+      <path fill="#c9925c" stroke="#7d4a3a" stroke-width="0.700" d="M104.800,70.500 L110.500,68 L113,74 L106.300,76 Z M86.300,112 L94.300,113 L93,118.500 L85.300,117.500 Z M25,175.500 L40,175.500 L40,180.500 L25,180.500 Z M65.500,175.500 L80,175.500 L80,180.500 L65.500,180.500 Z"/>
+      <!-- face -->
+      <ellipse cx="62.500" cy="27" rx="1.700" ry="1.300" fill="#2c2c2c"/>
+      <ellipse cx="76.300" cy="41.300" rx="1" ry="0.700" fill="#4c5d49"/>
+      <path fill="none" stroke="#4c5d49" stroke-width="0.900" d="M79,45 L75,46 M61.500,43 C64.500,40.500 65.500,36.500 64.500,33"/>
+      <!-- muscle -->
+      <path fill="none" stroke="#4c5d49" stroke-width="0.800" opacity="0.550" d="M75,66 C71,74 70,82 72,88 M38,112 C43,119 43,130 38,139"/>
     </g>
   </defs>
   <!-- mound -->
@@ -22,8 +44,8 @@
   <!-- maple leaf -->
   <path fill="#c9332f" stroke="#7e1f1c" stroke-width="0.5" stroke-linejoin="round" transform="translate(117 172) scale(0.8)" d="M0,-12 L2.500,-7 L5.500,-8.500 L4.500,-2 L9,-5 L9.500,-2.500 L13,-2 L9,2 L10,4 L2,5 L1,10 H-1 L-2,5 L-10,4 L-9,2 L-13,-2 L-9.500,-2.500 L-9,-5 L-4.500,-2 L-5.500,-8.500 L-2.500,-7 Z"/>
   <!-- supporters -->
-  <use href="#horse" transform="translate(25 41) scale(1.3)"/>
-  <use href="#horse" transform="translate(209 41) scale(-1.3 1.3)"/>
+  <use href="#horse" transform="translate(16.6 32.6) scale(0.641)"/>
+  <use href="#horse" transform="translate(217.4 32.6) scale(-0.641 0.641)"/>
   <!-- crest: the temple front -->
   <g stroke="#5f7d6a" stroke-width="0.7" stroke-linejoin="round">
     <path fill="#f6f4ec" d="M85,33 L116,16 L147,33 Z"/>
