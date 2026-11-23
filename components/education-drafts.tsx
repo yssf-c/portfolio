@@ -56,72 +56,48 @@ const SEAL_EDGE = Array.from({ length: 72 }, (_, i) => {
 }).join(" ");
 
 /**
- * The seal at the foot of a diploma. A conferred degree gets it pressed into
- * pale gold foil, the university's names around its arms; one still under
- * way gets the outline, and a gold rule around it that is as complete as the
- * degree.
+ * The seal at the foot of a diploma. A conferred degree gets the university's
+ * own, pressed into pale gold foil; one still under way gets an outline, and
+ * a gold rule around it that is as complete as the degree.
  */
 function Seal({ id, progress }: { id: string; progress?: number }) {
-  const pending = progress !== undefined;
+  if (progress === undefined) {
+    return (
+      <Image
+        className="diploma-seal diploma-seal-pressed"
+        src="/education/uottawa-seal.webp"
+        alt=""
+        width={536}
+        height={536}
+        unoptimized
+      />
+    );
+  }
   return (
-    <div className="diploma-seal" data-pending={pending ? "" : undefined} aria-hidden="true">
+    <div className="diploma-seal" aria-hidden="true">
       <svg viewBox="0 0 140 140">
         <defs>
-          <radialGradient id={`${id}-foil`} cx="0.5" cy="0.5" r="0.5">
-            <stop offset="0" stopColor="#f8f4dc" />
-            <stop offset="0.8" stopColor="#f7f2d6" />
-            <stop offset="1" stopColor="#f3ecc6" />
-          </radialGradient>
-          <radialGradient id={`${id}-glint`} cx="0.45" cy="0.78" r="0.5">
-            <stop offset="0" stopColor="#ecd24f" stopOpacity="0.6" />
-            <stop offset="0.5" stopColor="#f0dc7a" stopOpacity="0.28" />
-            <stop offset="1" stopColor="#f3e6a6" stopOpacity="0" />
-          </radialGradient>
-          <path id={`${id}-top`} d="M70,70 m-52,0 a52,52 0 0,1 104,0" />
-          <path id={`${id}-bottom`} d="M70,70 m-59,0 a59,59 0 0,0 118,0" />
           <path id={`${id}-arc`} d="M70,70 m-41,0 a41,41 0 1,1 82,0 a41,41 0 1,1 -82,0" />
         </defs>
-        {pending ? (
-          <>
-            <polygon className="diploma-seal-edge" points={SEAL_EDGE} />
-            <circle className="diploma-seal-ring" cx="70" cy="70" r="50" />
-            <circle
-              className="diploma-seal-progress"
-              cx="70"
-              cy="70"
-              r="50"
-              pathLength="100"
-              strokeDasharray={`${Math.round(progress * 100)} 100`}
-            />
-            <circle className="diploma-seal-ring" cx="70" cy="70" r="31" />
-            <text className="diploma-seal-legend">
-              <textPath href={`#${id}-arc`} textLength="252" lengthAdjust="spacing">
-                IN PROGRESS · EXPECTED DECEMBER 2026 ·
-              </textPath>
-            </text>
-            <text className="diploma-seal-centre" x="70" y="75.5" textAnchor="middle">
-              {Math.round(progress * 100)}%
-            </text>
-          </>
-        ) : (
-          <>
-            <circle className="diploma-seal-foil" cx="70" cy="70" r="68" fill={`url(#${id}-foil)`} />
-            <circle cx="70" cy="70" r="68" fill={`url(#${id}-glint)`} />
-            <circle className="diploma-seal-ring" cx="70" cy="70" r="65" />
-            <circle className="diploma-seal-ring" cx="70" cy="70" r="46" />
-            <text className="diploma-seal-legend">
-              <textPath href={`#${id}-top`} startOffset="50%" textAnchor="middle">
-                UNIVERSITÉ D’OTTAWA
-              </textPath>
-            </text>
-            <text className="diploma-seal-legend">
-              <textPath href={`#${id}-bottom`} startOffset="50%" textAnchor="middle">
-                UNIVERSITY OF OTTAWA
-              </textPath>
-            </text>
-            <image className="diploma-seal-arms" href="/education/uottawa-arms.svg" x="28" y="30" width="84" height="81.2" />
-          </>
-        )}
+        <polygon className="diploma-seal-edge" points={SEAL_EDGE} />
+        <circle className="diploma-seal-ring" cx="70" cy="70" r="50" />
+        <circle
+          className="diploma-seal-progress"
+          cx="70"
+          cy="70"
+          r="50"
+          pathLength="100"
+          strokeDasharray={`${Math.round(progress * 100)} 100`}
+        />
+        <circle className="diploma-seal-ring" cx="70" cy="70" r="31" />
+        <text className="diploma-seal-legend">
+          <textPath href={`#${id}-arc`} textLength="252" lengthAdjust="spacing">
+            IN PROGRESS · EXPECTED DECEMBER 2026 ·
+          </textPath>
+        </text>
+        <text className="diploma-seal-centre" x="70" y="75.5" textAnchor="middle">
+          {Math.round(progress * 100)}%
+        </text>
       </svg>
     </div>
   );
@@ -165,7 +141,7 @@ function Diploma({ sheet }: { sheet: Sheet }) {
               height={74}
               unoptimized
             />
-            <Image className="diploma-arms" src="/education/uottawa-arms.svg" alt="" width={178} height={172} unoptimized />
+            <Image className="diploma-arms" src="/education/uottawa-arms.webp" alt="" width={488} height={456} unoptimized />
             <Image
               className="diploma-wordmark"
               src="/education/uottawa-name-en.svg"

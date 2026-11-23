@@ -2154,10 +2154,13 @@ html[data-intro="play"] .preloader {
   width: calc(var(--u) * 32);
 }
 
+/* The arms are lifted from a photograph of the parchment, its paper turned
+   white, so multiplying them onto the sheet leaves only the print. */
 .diploma-arms {
   order: -1;
-  width: calc(var(--u) * 17);
+  width: calc(var(--u) * 19);
   height: auto;
+  mix-blend-mode: multiply;
 }
 
 .diploma-line {
@@ -2234,41 +2237,14 @@ html[data-intro="play"] .preloader {
   overflow: visible;
 }
 
-/* Pressed foil: pale gold that brightens where it catches the light, the
-   relief showing as a light edge on one side and a shaded one on the other. */
-.diploma-seal-foil {
-  stroke: rgb(226 208 140 / 0.5);
-  stroke-width: 0.5;
-  filter: drop-shadow(0 0.5px 0.7px rgb(130 105 40 / 0.22));
+/* The pressed seal is lifted from a photograph of the parchment, like the arms. */
+.diploma-seal-pressed {
+  width: calc(var(--u) * 20);
+  height: auto;
+  mix-blend-mode: multiply;
 }
 
-.diploma-seal-ring {
-  fill: none;
-  stroke: rgb(214 190 104 / 0.38);
-  stroke-width: 0.6;
-  filter: drop-shadow(0.4px 0.5px 0 rgb(255 255 255 / 0.9));
-}
-
-.diploma-seal-legend {
-  font-family: "Times New Roman", Times, "Liberation Serif", serif;
-  font-size: 9.6px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  fill: rgb(206 176 78 / 0.8);
-  filter: drop-shadow(0.5px 0.6px 0 rgb(255 255 255 / 0.95)) drop-shadow(-0.3px -0.4px 0 rgb(160 128 40 / 0.28));
-}
-
-.diploma-seal-arms {
-  opacity: 0.34;
-  filter: grayscale(1) sepia(1) saturate(1.7) hue-rotate(8deg) brightness(1.45) contrast(0.5)
-    drop-shadow(0.5px 0.6px 0 rgb(255 255 255 / 0.95));
-}
-
-.diploma-seal:not([data-pending]) {
-  opacity: 0.86;
-}
-
-/* Not conferred yet: the outline of the seal, and a gold rule as complete as the degree. */
+/* Not conferred yet: the outline of a seal, and a gold rule as complete as the degree. */
 .diploma-seal-edge {
   fill: rgb(var(--foil) / 0.07);
   stroke: rgb(var(--foil) / 0.55);
@@ -2276,7 +2252,8 @@ html[data-intro="play"] .preloader {
   stroke-dasharray: 2 2;
 }
 
-.diploma-seal[data-pending] .diploma-seal-ring {
+.diploma-seal-ring {
+  fill: none;
   stroke: rgb(120 92 24 / 0.5);
   stroke-width: 0.8;
 }
@@ -2290,11 +2267,11 @@ html[data-intro="play"] .preloader {
   transform-origin: 70px 70px;
 }
 
-.diploma-seal[data-pending] .diploma-seal-legend {
+.diploma-seal-legend {
+  font-family: "Times New Roman", Times, "Liberation Serif", serif;
   font-size: 7.4px;
-  letter-spacing: 0;
+  font-weight: 700;
   fill: rgb(var(--foil));
-  filter: none;
 }
 
 .diploma-seal-centre {
@@ -2383,9 +2360,9 @@ html[data-intro="play"] .preloader {
 
   .diploma-arms {
     position: absolute;
-    top: calc(var(--u) * 2.11);
-    left: calc(var(--u) * 42.74);
-    width: calc(var(--u) * 14.93);
+    top: calc(var(--u) * 1.475);
+    left: calc(var(--u) * 41.89);
+    width: calc(var(--u) * 16.52);
   }
 
   .diploma-line,
@@ -2457,6 +2434,12 @@ html[data-intro="play"] .preloader {
     top: calc(var(--u) * 56.8);
     left: calc(var(--u) * 42.1);
     width: calc(var(--u) * 16.6);
+  }
+
+  .diploma-seal-pressed {
+    top: calc(var(--u) * 56.15);
+    left: calc(var(--u) * 41.35);
+    width: calc(var(--u) * 18.15);
   }
 
   .diploma-office {
