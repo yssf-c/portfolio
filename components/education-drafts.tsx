@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, type CSSProperties, type ReactNode } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { degrees, type Degree } from "@/lib/profile-data";
@@ -55,23 +56,22 @@ const SEAL_EDGE = Array.from({ length: 72 }, (_, i) => {
 }).join(" ");
 
 /**
- * The seal on a diploma. A conferred degree gets it in gold foil; one still
- * under way gets the outline, and a gold rule around it that is as complete
- * as the degree is.
+ * The seal at the foot of a diploma. A conferred degree gets it in pale gold
+ * foil, the university's names around its shield; one still under way gets
+ * the outline, and a gold rule around it that is as complete as the degree.
  */
-function Seal({ id, legend, centre, progress }: { id: string; legend: string; centre: string; progress?: number }) {
+function Seal({ id, progress }: { id: string; progress?: number }) {
   const pending = progress !== undefined;
   return (
     <div className="diploma-seal" data-pending={pending ? "" : undefined} aria-hidden="true">
       <svg viewBox="0 0 140 140">
         <defs>
-          <linearGradient id={`${id}-foil`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#f3dc9b" />
-            <stop offset="0.32" stopColor="#c79a3a" />
-            <stop offset="0.55" stopColor="#f7e7b4" />
-            <stop offset="0.78" stopColor="#b3842b" />
-            <stop offset="1" stopColor="#e6c873" />
-          </linearGradient>
+          <radialGradient id={`${id}-foil`} cx="0.36" cy="0.3" r="0.85">
+            <stop offset="0" stopColor="#fbf3cf" />
+            <stop offset="0.45" stopColor="#ecd88f" />
+            <stop offset="0.8" stopColor="#d9bd63" />
+            <stop offset="1" stopColor="#c9a94e" />
+          </radialGradient>
           <path id={`${id}-arc`} d="M70,70 m-41,0 a41,41 0 1,1 82,0 a41,41 0 1,1 -82,0" />
         </defs>
         <polygon className="diploma-seal-edge" points={SEAL_EDGE} fill={pending ? undefined : `url(#${id}-foil)`} />
@@ -89,156 +89,80 @@ function Seal({ id, legend, centre, progress }: { id: string; legend: string; ce
         <circle className="diploma-seal-ring" cx="70" cy="70" r="31" />
         <text className="diploma-seal-legend">
           <textPath href={`#${id}-arc`} textLength="252" lengthAdjust="spacing">
-            {legend}
+            {pending ? "IN PROGRESS · EXPECTED DECEMBER 2026 ·" : "UNIVERSITÉ D’OTTAWA · UNIVERSITY OF OTTAWA ·"}
           </textPath>
         </text>
-        <text className="diploma-seal-centre" x="70" y="75.5" textAnchor="middle">
-          {centre}
-        </text>
+        {pending ? (
+          <text className="diploma-seal-centre" x="70" y="75.5" textAnchor="middle">
+            {Math.round(progress * 100)}%
+          </text>
+        ) : (
+          <g className="diploma-seal-shield" transform="translate(49 48.5) scale(0.35)">
+            <path d={SHIELD} />
+            <path d="M12,42 H108 M12,72 H108 M60,48 V66 M30,50 H52 V64 H30 Z M68,50 H90 V64 H68 Z" />
+          </g>
+        )}
       </svg>
     </div>
   );
 }
 
 const SHIELD = "M12,6 H108 V60 C108,88 86,106 60,118 C34,106 12,88 12,60 Z";
-const ESCUTCHEON = "M-3,-3.6 H3 V0.6 C3,2.6 1.6,3.8 0,4.6 C-1.6,3.8 -3,2.6 -3,0.6 Z";
-const PAGE = "M0,-6.5 C-4,-9 -9,-9 -13,-7 V7 C-9,5 -4,5 0,7.5 Z";
-const BINDING = "M-13,7 C-9,5 -4,5 0,7.5 C4,5 9,5 13,7 V8.8 C9,6.8 4,6.8 0,9.3 C-4,6.8 -9,6.8 -13,8.8 Z";
-const PETAL = "M-0.5,1.3 C-1.2,-0.6 -2.6,-1.6 -3.4,-0.6 C-3.9,0.2 -3.2,1 -2.5,0.7 C-2.6,1.4 -1.6,1.7 -0.5,1.3 Z";
 
-/**
- * The University of Ottawa's shield, drawn from its blazon: garnet strewn
- * with small white shields and, on a white band, two open books, one showing
- * a rose and the other a fleur-de-lys. The motto runs on the scroll beneath.
- */
-function Arms({ id }: { id: string }) {
-  return (
-    <svg className="diploma-arms" viewBox="0 0 120 152" aria-hidden="true">
-      <defs>
-        <clipPath id={`${id}-shield`}>
-          <path d={SHIELD} />
-        </clipPath>
-        <pattern id={`${id}-seme`} width="16" height="19" patternUnits="userSpaceOnUse" patternTransform="translate(4 3.5)">
-          <path d={ESCUTCHEON} transform="translate(4 5)" />
-          <path d={ESCUTCHEON} transform="translate(12 14.5)" />
-        </pattern>
-        <path id={`${id}-motto`} d="M13,133.5 Q60,150.5 107,133.5" />
-      </defs>
-      <path className="diploma-arms-field" d={SHIELD} />
-      <g clipPath={`url(#${id}-shield)`}>
-        <rect className="diploma-arms-seme" width="120" height="120" fill={`url(#${id}-seme)`} />
-        <rect className="diploma-arms-fess" x="0" y="42" width="120" height="30" />
-        {[37, 83].map((x, book) => (
-          <g key={x} transform={`translate(${x} 56.5)`}>
-            <path className="diploma-arms-binding" d={BINDING} />
-            <path className="diploma-arms-page" d={PAGE} />
-            <path className="diploma-arms-page" d={PAGE} transform="scale(-1 1)" />
-            <path className="diploma-arms-lines" d="M2.5,-4.6 C5.5,-6 8,-6 10.5,-5.2 M2.5,-1.8 C5.5,-3.2 8,-3.2 10.5,-2.4 M2.5,1 C5.5,-0.4 8,-0.4 10.5,0.4" />
-            {book === 0 ? (
-              <g className="diploma-arms-charge" transform="translate(-6.5 -1)">
-                {[0, 1, 2, 3, 4].map((petal) => (
-                  <circle key={petal} r="1.45" cx={(1.75 * Math.sin((petal * 2 * Math.PI) / 5)).toFixed(2)} cy={(-1.75 * Math.cos((petal * 2 * Math.PI) / 5)).toFixed(2)} />
-                ))}
-                <circle className="diploma-arms-seed" r="0.8" />
-              </g>
-            ) : (
-              <g className="diploma-arms-charge" transform="translate(-6.5 -1.2)">
-                <path d="M0,-3.8 C1.5,-1.9 1.4,0 0,1.4 C-1.4,0 -1.5,-1.9 0,-3.8 Z" />
-                <path d={PETAL} />
-                <path d={PETAL} transform="scale(-1 1)" />
-                <rect x="-1.9" y="1.3" width="3.8" height="0.8" />
-                <path d="M0,2.1 L1.3,3.7 H-1.3 Z" />
-              </g>
-            )}
-          </g>
-        ))}
-        <path className="diploma-arms-rule" d="M0,42 H120 M0,72 H120" />
-      </g>
-      <path className="diploma-arms-edge" d={SHIELD} />
-      <path className="diploma-arms-scroll" d="M9,125 Q60,143 111,125 L111,138 Q60,156 9,138 Z" />
-      <text className="diploma-arms-motto">
-        <textPath href={`#${id}-motto`} startOffset="50%" textAnchor="middle">
-          DEUS SCIENTIARUM DOMINUS EST
-        </textPath>
-      </text>
-    </svg>
-  );
-}
-
-type Bilingual = [french: ReactNode, english: ReactNode];
-
-/** One line of a diploma, in French and in English. */
-function Pair({ className = "", text }: { className?: string; text: Bilingual }) {
-  return (
-    <p className={`diploma-pair ${className}`}>
-      <span lang="fr">{text[0]}</span>
-      <span>{text[1]}</span>
-    </p>
-  );
-}
+type Slot = { label: string; value: ReactNode };
 
 type Sheet = {
   id: Degree["id"];
   rest: number;
-  conferral: Bilingual;
-  title: Bilingual;
-  field?: Bilingual;
-  thesis?: string;
-  courses?: string;
-  dated: Bilingual;
-  slots: [Slot, Slot];
-  seal: ReactNode;
+  /** The lines above the name, between the name and the degree, and after it. */
+  conferral: string;
+  having: ReactNode;
+  degree: string;
+  field?: string;
+  rights: ReactNode;
+  given: string;
+  /** Where the four signatures go: top left, top right, bottom left, bottom right. */
+  slots: [Slot, Slot, Slot, Slot];
+  progress?: number;
 };
 
-type Slot = { value: ReactNode; label: string };
-
 /**
- * A degree as the university's own parchment: its arms between its two
- * names, the Senate's sentence in both languages either side of the sheet,
- * the name across the middle, and the seal at the foot.
+ * A degree set out as the University of Ottawa's parchment: its two names in
+ * garnet either side of its arms, the Senate's sentence down the middle, the
+ * seal at the foot, and facts about the degree where the signatures go.
  */
 function Diploma({ sheet }: { sheet: Sheet }) {
-  const slot = ({ value, label }: Slot) => (
-    <div className="diploma-slot">
-      <span>{value}</span>
-      <small>{label}</small>
-    </div>
-  );
   return (
     <TiltCard className="diploma" rest={sheet.rest}>
       <div className="diploma-sheet">
         <header className="diploma-head">
-          <p lang="fr">Université d’Ottawa</p>
-          <Arms id={`arms-${sheet.id}`} />
-          <p>University of Ottawa</p>
+          <p lang="fr">
+            Université <br />
+            d’Ottawa
+          </p>
+          <Image className="diploma-arms" src="/education/uottawa-arms.svg" alt="" width={184} height={176} unoptimized />
+          <p>
+            University <br />
+            of Ottawa
+          </p>
         </header>
-        <Pair text={sheet.conferral} />
+        <p className="diploma-line">{sheet.conferral}</p>
         <p className="diploma-name">Youssef Chouay</p>
-        <Pair className="diploma-quiet" text={["le grade de", "the degree of"]} />
-        <h3 className="diploma-pair diploma-degree">
-          <span lang="fr">{sheet.title[0]}</span>
-          <span>{sheet.title[1]}</span>
-        </h3>
-        {sheet.field && <Pair className="diploma-field" text={sheet.field} />}
-        {sheet.thesis && (
-          <p className="diploma-extra">
-            <small>Thèse · Thesis</small>
-            {sheet.thesis}
-          </p>
-        )}
-        {sheet.courses && (
-          <p className="diploma-extra">
-            <small>Cours · Coursework</small>
-            {sheet.courses}
-          </p>
-        )}
-        <Pair className="diploma-rights" text={sheet.dated} />
+        <p className="diploma-line">{sheet.having}</p>
+        <h3 className="diploma-degree">{sheet.degree}</h3>
+        {sheet.field && <p className="diploma-field">{sheet.field}</p>}
+        <p className="diploma-line">{sheet.rights}</p>
+        <p className="diploma-line">{sheet.given}</p>
         <footer className="diploma-foot">
-          {slot(sheet.slots[0])}
-          {sheet.seal}
-          {slot(sheet.slots[1])}
+          <Seal id={`seal-${sheet.id}`} progress={sheet.progress} />
+          {sheet.slots.map((slot, index) => (
+            <div key={index} className="diploma-slot">
+              <span>{slot.value}</span>
+              <small>{slot.label}</small>
+            </div>
+          ))}
         </footer>
-        <p className="diploma-micro">Reproduction pour portfolio · Portfolio rendering, not an official document</p>
+        <p className="diploma-micro">Portfolio rendering, not an official document</p>
       </div>
     </TiltCard>
   );
@@ -246,70 +170,58 @@ function Diploma({ sheet }: { sheet: Sheet }) {
 
 /** The two degrees as University of Ottawa diplomas on a desk. */
 export function EducationCards({ progress }: { progress: number }) {
+  const [mscFrom, mscTo] = msc.period.split(" — ");
+  const courses = basc.coursework?.map((course) => course.name) ?? [];
+  const half = Math.ceil(courses.length / 2);
   const sheets: Sheet[] = [
     {
       id: "msc",
       rest: -1.2,
-      conferral: [
-        "Le Sénat de l’Université d’Ottawa, sur la recommandation de la Faculté de génie, conférera à",
-        "The Senate of the University of Ottawa, on the recommendation of the Faculty of Engineering, will confer upon",
-      ],
-      title: [
+      conferral: "The Senate of the University of Ottawa will confer on",
+      having: (
         <>
-          Maîtrise en <br />
-          informatique
-        </>,
-        <>
-          {msc.title[0]} <br />
-          {msc.title[1]}
-        </>,
-      ],
-      thesis: msc.thesis,
-      dated: [
-        "avec tous les droits, honneurs et privilèges qui s’y rattachent. Études entreprises en janvier 2025 ; grade attendu à Ottawa, Canada, en décembre 2026.",
-        "with all the rights, honours and privileges pertaining thereto. Studies begun in January 2025; degree expected at Ottawa, Canada, in December 2026.",
-      ],
-      slots: [
-        { value: msc.supervisor, label: "Directrice de thèse · Thesis supervisor" },
-        { value: msc.funding?.amount, label: "Bourses d’études · Scholarships" },
-      ],
-      seal: (
-        <Seal
-          id="seal-msc"
-          legend="EN COURS · IN PROGRESS · DÉCEMBRE · DECEMBER 2026 ·"
-          centre={`${Math.round(progress * 100)}%`}
-          progress={progress}
-        />
+          on fulfilling all the requirements and defending the thesis <br />
+          <em>“{msc.thesis}”</em>, <br />
+          the degree of
+        </>
       ),
+      degree: `${msc.title[0]} ${msc.title[1]}`,
+      rights: "with all the rights, honours and privileges proper to it.",
+      given: "Expected at Ottawa, December 2026.",
+      slots: [
+        { label: "Thesis supervisor", value: msc.supervisor },
+        { label: "Scholarships", value: msc.funding?.amount },
+        { label: "Enrolled", value: mscFrom },
+        { label: "Expected", value: mscTo },
+      ],
+      progress,
     },
     {
       id: "basc",
       rest: 1.6,
-      conferral: [
-        "Le Sénat de l’Université d’Ottawa, sur la recommandation de la Faculté de génie, a conféré à",
-        "The Senate of the University of Ottawa, on the recommendation of the Faculty of Engineering, has conferred upon",
-      ],
-      title: [
+      conferral: "The Senate of the University of Ottawa has conferred on",
+      having: (
         <>
-          Baccalauréat ès <br />
-          sciences appliquées
-        </>,
+          who has fulfilled all the requirements and <br />
+          passed the prescribed examinations, the degree of
+        </>
+      ),
+      degree: `${basc.title[0]} ${basc.title[1]}`,
+      field: basc.field,
+      rights: (
         <>
-          {basc.title[0]} <br />
-          {basc.title[1]}
-        </>,
-      ],
-      field: ["Génie logiciel", basc.field],
-      courses: basc.coursework?.map((course) => course.name).join(" · "),
-      dated: [
-        "avec tous les droits, honneurs et privilèges qui s’y rattachent. Fait à Ottawa, Canada, en décembre 2024.",
-        "with all the rights, honours and privileges pertaining thereto. Given at Ottawa, Canada, in December 2024.",
-      ],
+          with all the rights, honours and privileges proper to it. <br />
+          In testimony whereof we have hereto subscribed our names and caused <br />
+          the seal of the University to be affixed to this document.
+        </>
+      ),
+      given: "Given at Ottawa, December 2024.",
       slots: [
-        { value: basc.period, label: "Période d’études · Period of study" },
-        { value: basc.gpa, label: "Moyenne pondérée · Grade point average" },
+        { label: "Period of study", value: basc.period },
+        { label: "Grade point average", value: basc.gpa },
+        { label: "Coursework", value: courses.slice(0, half).join(" · ") },
+        { label: "Coursework", value: courses.slice(half).join(" · ") },
       ],
-      seal: <Seal id="seal-basc" legend="CONFÉRÉ · CONFERRED · DÉCEMBRE · DECEMBER 2024 ·" centre={basc.short} />,
     },
   ];
   return (
