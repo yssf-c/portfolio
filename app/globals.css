@@ -2060,14 +2060,14 @@ html[data-intro="play"] .preloader {
   --ry: 0deg;
   --gx: 50%;
   --gy: 0%;
-  --paper: #fdfcf8;
-  --ink: #1a1613;
-  --garnet: 150 36 44;
+  --paper: #f9faf9;
+  --ink: #17140f;
+  --garnet: 160 62 58;
   --foil: 138 106 43;
   position: relative;
   container-type: inline-size;
   background:
-    radial-gradient(120% 90% at 50% 40%, transparent 60%, rgb(120 100 70 / 0.1)),
+    radial-gradient(120% 90% at 50% 40%, transparent 62%, rgb(110 115 115 / 0.07)),
     var(--paper);
   color: var(--ink);
   box-shadow:
@@ -2101,7 +2101,7 @@ html[data-intro="play"] .preloader {
   position: absolute;
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.07;
+  opacity: 0.05;
   mix-blend-mode: multiply;
   pointer-events: none;
 }
@@ -2128,39 +2128,36 @@ html[data-intro="play"] .preloader {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: calc(var(--u) * 5) calc(var(--u) * 4.5) calc(var(--u) * 5.5);
+  padding: calc(var(--u) * 5) calc(var(--u) * 4.5) calc(var(--u) * 5);
   font-family: "Times New Roman", Times, "Liberation Serif", "Nimbus Roman", serif;
   font-size: calc(var(--u) * 2.2);
   line-height: 1.28;
   text-align: center;
 }
 
-/* The university's two names, in garnet, over a garnet rule. */
+/* The university's two names, lettered as on the parchment, over a grey rule. */
 .diploma-head {
   display: grid;
   width: 100%;
   justify-items: center;
-  padding-bottom: calc(var(--u) * 1.6);
-  border-bottom: 1px solid rgb(var(--garnet) / 0.75);
-  font-family: var(--font-newsreader), Georgia, serif;
-  font-size: calc(var(--u) * 4.1);
-  white-space: nowrap;
-  font-style: italic;
-  font-weight: 500;
-  line-height: 1.08;
-  letter-spacing: -0.005em;
-  color: rgb(var(--garnet));
+  gap: calc(var(--u) * 1.4);
+  padding-bottom: calc(var(--u) * 2.4);
+  border-bottom: 1px solid rgb(176 170 164);
 }
 
-.diploma-head br {
-  display: none;
+.diploma-wordmark {
+  width: calc(var(--u) * 30);
+  height: auto;
+}
+
+.diploma-wordmark + .diploma-arms + .diploma-wordmark {
+  width: calc(var(--u) * 32.25);
 }
 
 .diploma-arms {
   order: -1;
   width: calc(var(--u) * 17);
   height: auto;
-  margin-bottom: calc(var(--u) * 1.2);
 }
 
 .diploma-line {
@@ -2202,40 +2199,26 @@ html[data-intro="play"] .preloader {
   margin-top: calc(var(--u) * 2.2);
 }
 
-/* The seal, and around it the four places where the signatures go. */
+/* The seal, and around it the four offices that sign. */
 .diploma-foot {
   display: grid;
   width: 100%;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: end;
-  gap: calc(var(--u) * 3) calc(var(--u) * 3);
+  gap: calc(var(--u) * 5) calc(var(--u) * 2);
   margin-top: auto;
   padding-top: calc(var(--u) * 4);
 }
 
-.diploma-slot {
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--u) * 0.5);
+.diploma-office {
+  font-size: calc(var(--u) * 1.4);
+  font-weight: 700;
+  line-height: 1.2;
   text-align: left;
 }
 
-/* The seal is the footer's first div, so the right-hand slots are the odd ones. */
-.diploma-slot:nth-of-type(odd) {
+.diploma-office:nth-of-type(even) {
   text-align: right;
-}
-
-.diploma-slot span {
-  font-size: calc(var(--u) * 2);
-  font-style: italic;
-  line-height: 1.2;
-  text-wrap: balance;
-}
-
-.diploma-slot small {
-  font-size: calc(var(--u) * 1.35);
-  font-weight: 700;
-  line-height: 1.2;
 }
 
 .diploma-seal {
@@ -2243,61 +2226,55 @@ html[data-intro="play"] .preloader {
   grid-column: 1 / -1;
   justify-self: center;
   width: calc(var(--u) * 17);
-  filter: drop-shadow(0 calc(var(--u) * 0.25) calc(var(--u) * 0.35) rgb(90 70 20 / 0.3));
 }
 
 .diploma-seal svg {
   display: block;
   width: 100%;
+  overflow: visible;
 }
 
-.diploma-seal-edge {
-  stroke: rgb(150 120 40 / 0.5);
+/* Pressed foil: pale gold that brightens where it catches the light, the
+   relief showing as a light edge on one side and a shaded one on the other. */
+.diploma-seal-foil {
+  stroke: rgb(226 208 140 / 0.5);
   stroke-width: 0.5;
+  filter: drop-shadow(0 0.5px 0.7px rgb(130 105 40 / 0.22));
 }
 
 .diploma-seal-ring {
   fill: none;
-  stroke: rgb(120 92 24 / 0.5);
-  stroke-width: 0.8;
+  stroke: rgb(214 190 104 / 0.38);
+  stroke-width: 0.6;
+  filter: drop-shadow(0.4px 0.5px 0 rgb(255 255 255 / 0.9));
 }
 
 .diploma-seal-legend {
   font-family: "Times New Roman", Times, "Liberation Serif", serif;
-  font-size: 7.4px;
+  font-size: 9.6px;
   font-weight: 700;
-  fill: rgb(110 84 20 / 0.8);
+  letter-spacing: 0.1em;
+  fill: rgb(206 176 78 / 0.8);
+  filter: drop-shadow(0.5px 0.6px 0 rgb(255 255 255 / 0.95)) drop-shadow(-0.3px -0.4px 0 rgb(160 128 40 / 0.28));
 }
 
-.diploma-seal-centre {
-  font-family: "Times New Roman", Times, "Liberation Serif", serif;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-/* The shield, pressed into the foil */
-.diploma-seal-shield path {
-  fill: rgb(255 250 225 / 0.35);
-  stroke: rgb(120 92 24 / 0.6);
-  stroke-width: 2.2;
-  stroke-linejoin: round;
-}
-
-.diploma-seal-shield path + path {
-  fill: none;
-  stroke-width: 1.6;
+.diploma-seal-arms {
+  opacity: 0.34;
+  filter: grayscale(1) sepia(1) saturate(1.7) hue-rotate(8deg) brightness(1.45) contrast(0.5)
+    drop-shadow(0.5px 0.6px 0 rgb(255 255 255 / 0.95));
 }
 
 /* Not conferred yet: the outline of the seal, and a gold rule as complete as the degree. */
-.diploma-seal[data-pending] {
-  filter: none;
-}
-
-.diploma-seal[data-pending] .diploma-seal-edge {
+.diploma-seal-edge {
   fill: rgb(var(--foil) / 0.07);
   stroke: rgb(var(--foil) / 0.55);
   stroke-width: 0.8;
   stroke-dasharray: 2 2;
+}
+
+.diploma-seal[data-pending] .diploma-seal-ring {
+  stroke: rgb(120 92 24 / 0.5);
+  stroke-width: 0.8;
 }
 
 .diploma-seal-progress {
@@ -2309,121 +2286,191 @@ html[data-intro="play"] .preloader {
   transform-origin: 70px 70px;
 }
 
-.diploma-seal[data-pending] .diploma-seal-legend,
-.diploma-seal[data-pending] .diploma-seal-centre {
+.diploma-seal[data-pending] .diploma-seal-legend {
+  font-size: 7.4px;
+  letter-spacing: 0;
+  fill: rgb(var(--foil));
+  filter: none;
+}
+
+.diploma-seal-centre {
+  font-family: "Times New Roman", Times, "Liberation Serif", serif;
+  font-size: 16px;
+  font-weight: 700;
   fill: rgb(var(--foil));
 }
 
-.diploma-micro {
-  position: absolute;
-  inset: auto 0 calc(var(--u) * 1.8);
-  font-size: calc(var(--u) * 1.1);
-  letter-spacing: 0.04em;
-  opacity: 0.4;
+/* What the sheet does not say, set under it in the page's own type. */
+.diploma-notes {
+  margin-top: 1.5rem;
+  padding-inline: 0.25rem;
 }
 
-/* A sheet with room lies on its side, as the parchment does: letter
-   proportions, a name either side of the arms, and a signature in each corner. */
+.diploma-notes dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem 1.75rem;
+}
+
+.diploma-notes dt {
+  font-family: var(--font-roboto-mono), "Roboto Mono", monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: hsl(var(--foreground-subtle));
+}
+
+.diploma-notes dd {
+  margin-top: 0.2rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: hsl(var(--foreground-soft));
+}
+
+/* A sheet with room lies on its side and is set out as the parchment is,
+   measured from one: every position below is a hundredth of its width. */
 @container (min-width: 600px) {
   .diploma-sheet {
     --u: 1cqw;
-    aspect-ratio: 11 / 8.5;
-    padding: calc(var(--u) * 2.6) calc(var(--u) * 5) calc(var(--u) * 3.6);
-    font-size: calc(var(--u) * 2.1);
-    line-height: 1.25;
+    display: block;
+    aspect-ratio: 615 / 472;
+    padding: 0;
+    font-size: calc(var(--u) * 2.095);
+    line-height: 1;
   }
 
   .diploma-head {
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    align-items: end;
-    gap: calc(var(--u) * 1.4);
-    padding-bottom: 0;
-    border-bottom: 0;
-    font-size: calc(var(--u) * 6.6);
-    line-height: 0.96;
+    position: absolute;
+    inset: 0 0 auto;
+    display: block;
+    height: calc(var(--u) * 16.5);
+    padding: 0;
+    border: 0;
   }
 
-  .diploma-head br {
-    display: inline;
+  /* The two rules the names stand over, stopping short of the arms. */
+  .diploma-head::before,
+  .diploma-head::after {
+    content: "";
+    position: absolute;
+    top: calc(var(--u) * 14.5);
+    left: calc(var(--u) * 5.04);
+    width: calc(var(--u) * 35.6);
+    height: 1px;
+    background: rgb(176 170 164);
   }
 
-  .diploma-head > p {
-    width: 100%;
-    padding-bottom: calc(var(--u) * 1.5);
-    border-bottom: 1px solid rgb(var(--garnet) / 0.75);
+  .diploma-head::after {
+    left: calc(var(--u) * 60.49);
+    width: calc(var(--u) * 34.8);
   }
 
-  /* The arms hang a little below the rule. */
+  .diploma-wordmark {
+    position: absolute;
+    top: calc(var(--u) * 2.28);
+    left: calc(var(--u) * 13.66);
+    width: calc(var(--u) * 26.02);
+  }
+
+  .diploma-wordmark + .diploma-arms + .diploma-wordmark {
+    left: calc(var(--u) * 60.81);
+    width: calc(var(--u) * 27.97);
+  }
+
   .diploma-arms {
-    order: 0;
-    width: calc(var(--u) * 15.5);
-    margin-bottom: calc(var(--u) * -1.2);
+    position: absolute;
+    top: calc(var(--u) * 1.92);
+    left: calc(var(--u) * 43.1);
+    width: calc(var(--u) * 14.05);
   }
 
-  .diploma-line {
-    margin-top: calc(var(--u) * 0.9);
+  .diploma-line,
+  .diploma-name,
+  .diploma-degree,
+  .diploma-field {
+    position: absolute;
+    /* The print sits a hair right of centre. */
+    inset: auto 0 auto calc(var(--u) * 1);
+    margin: 0;
+    line-height: 1;
+    white-space: nowrap;
   }
 
-  .diploma-head + .diploma-line {
-    margin-top: calc(var(--u) * 4.4);
+  .diploma-head + .diploma-line,
+  .diploma-field + .diploma-line,
+  .diploma-degree + .diploma-line {
+    margin: 0;
   }
 
   .diploma-line br {
     display: inline;
   }
 
+  .diploma-conferral {
+    top: calc(var(--u) * 19.84);
+  }
+
   .diploma-name {
-    margin-top: calc(var(--u) * 1.1);
-    font-size: calc(var(--u) * 2.7);
+    top: calc(var(--u) * 23.93);
+    font-size: calc(var(--u) * 2.61);
+  }
+
+  .diploma-having {
+    top: calc(var(--u) * 27.16);
+    font-size: calc(var(--u) * 2.11);
+    line-height: calc(var(--u) * 2.6);
   }
 
   .diploma-degree {
-    margin-top: calc(var(--u) * 1.7);
-    font-size: calc(var(--u) * 2.6);
+    top: calc(var(--u) * 34.33);
+    font-size: calc(var(--u) * 2.65);
   }
 
   .diploma-field {
-    margin-top: calc(var(--u) * 0.1);
-    font-size: calc(var(--u) * 2.1);
+    top: calc(var(--u) * 37.19);
+    font-size: calc(var(--u) * 2.14);
   }
 
-  .diploma-field + .diploma-line,
-  .diploma-degree + .diploma-line {
-    margin-top: calc(var(--u) * 1.6);
+  .diploma-rights {
+    top: calc(var(--u) * 41.3);
+    font-size: calc(var(--u) * 2.14);
+    line-height: calc(var(--u) * 2.358);
+  }
+
+  .diploma-given {
+    top: calc(var(--u) * 49.7);
   }
 
   .diploma-foot {
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    gap: calc(var(--u) * 3.4) calc(var(--u) * 3);
-    padding-top: calc(var(--u) * 1);
+    position: absolute;
+    inset: 0;
+    display: block;
+    padding: 0;
   }
 
   .diploma-seal {
-    grid-area: 1 / 2 / 3 / 3;
-    align-self: center;
-    width: calc(var(--u) * 15);
+    position: absolute;
+    top: calc(var(--u) * 56.8);
+    left: calc(var(--u) * 42.1);
+    width: calc(var(--u) * 16.6);
   }
 
-  .diploma-slot:nth-of-type(odd) {
-    grid-column: 3;
+  .diploma-office {
+    position: absolute;
+    top: calc(var(--u) * 62.21);
+    left: calc(var(--u) * 4.88);
+    font-size: calc(var(--u) * 1.25);
+    line-height: 1;
+    white-space: nowrap;
   }
 
-  .diploma-slot:nth-of-type(even) {
-    grid-column: 1;
+  .diploma-office:nth-of-type(even) {
+    right: calc(var(--u) * 4.7);
+    left: auto;
   }
 
-  .diploma-slot span {
-    font-size: calc(var(--u) * 1.8);
-  }
-
-  .diploma-slot small {
-    font-size: calc(var(--u) * 1.2);
-  }
-
-  .diploma-micro {
-    inset: auto 0 calc(var(--u) * 1.1);
-    font-size: calc(var(--u) * 0.9);
+  .diploma-office:nth-of-type(n + 3) {
+    top: calc(var(--u) * 71.6);
   }
 }
 
@@ -2477,7 +2524,7 @@ html[data-intro="play"] .preloader {
     padding-block: 1rem 4rem;
   }
 
-  .diploma:last-child {
+  .diploma-figure:last-child {
     margin-top: 3rem;
     margin-bottom: -3rem;
   }
